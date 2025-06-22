@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup() {
+    public ResponseEntity<UserDto> signup(@RequestBody UserDto userDto) {
         return ResponseEntity.ok(new UserDto());
     }
+
+
 
 }
