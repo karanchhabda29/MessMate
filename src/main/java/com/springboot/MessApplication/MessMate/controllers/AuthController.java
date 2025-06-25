@@ -1,6 +1,7 @@
 package com.springboot.MessApplication.MessMate.controllers;
 
 
+import com.springboot.MessApplication.MessMate.dto.LoginDto;
 import com.springboot.MessApplication.MessMate.dto.SignupDto;
 import com.springboot.MessApplication.MessMate.dto.UserDto;
 import com.springboot.MessApplication.MessMate.services.AuthService;
@@ -26,6 +27,12 @@ public class AuthController {
         return ResponseEntity.ok(userDto);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginDto loginDto) {
+        String accessToken = authService.login(loginDto);
+
+        return ResponseEntity.ok(accessToken);
+    }
 
 
 }
