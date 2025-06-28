@@ -2,8 +2,10 @@ package com.springboot.MessApplication.MessMate.services;
 
 import com.springboot.MessApplication.MessMate.dto.SignupDto;
 import com.springboot.MessApplication.MessMate.dto.UserDto;
+import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Role;
+import com.springboot.MessApplication.MessMate.entities.enums.Status;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import com.springboot.MessApplication.MessMate.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -44,7 +47,18 @@ public class UserService implements UserDetailsService {
 
         User toBeCreatedUser = modelMapper.map(signupDto, User.class);
         toBeCreatedUser.setRole(Role.STUDENT);
+
+        Subscription subscription = Subscription.builder().status(Status.INACTIVE).build();
+        toBeCreatedUser.setSubscription(subscription);
         toBeCreatedUser.setPassword(passwordEncoder.encode(signupDto.getPassword()));
         return modelMapper.map(userRepository.save(toBeCreatedUser), UserDto.class);
+    }
+
+    public User saveUser(User user){
+        return userRepository.save(user);
+    }
+
+    public List<User> getSubscribedUsers(){
+        return userRepository.findBySubscription_Status(Status.ACTIVE);
     }
 }

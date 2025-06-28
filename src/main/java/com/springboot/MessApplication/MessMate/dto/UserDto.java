@@ -1,5 +1,6 @@
 package com.springboot.MessApplication.MessMate.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.springboot.MessApplication.MessMate.entities.enums.Role;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDto {
+    private Long id;
     private String email;
     private String name;
     private Role role;
