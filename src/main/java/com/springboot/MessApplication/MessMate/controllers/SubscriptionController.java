@@ -19,6 +19,11 @@ public class SubscriptionController {
         this.subscriptionService = subscriptionService;
     }
 
+    @GetMapping
+    public ResponseEntity<SubscriptionDto> getSubscriptionDetails() {
+        return ResponseEntity.ok(subscriptionService.getSubscriptionDetails());
+    }
+
     @PostMapping("/request-new-subscription")
     public ResponseEntity<SubscriptionDto> requestNewSubscription(){
         return ResponseEntity.ok(subscriptionService.requestNewSubscription());

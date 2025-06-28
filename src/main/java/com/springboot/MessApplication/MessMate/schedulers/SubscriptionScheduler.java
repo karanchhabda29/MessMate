@@ -4,7 +4,6 @@ import com.springboot.MessApplication.MessMate.services.UserService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 
 @Component
 public class SubscriptionScheduler {
@@ -15,9 +14,12 @@ public class SubscriptionScheduler {
         this.userService = userService;
     }
 
-//    @Scheduled(cron = "0 * * * * *")
-//    public void countMeal() {
-//        Arrays.stream(userService.getSubscribedUsers())
-//                .forEach
-//    }
+    @Scheduled(cron = "0 * * * * *")
+    public void countMeal() {
+        userService.getSubscribedUsers().forEach(user -> {
+           Integer updatedMeals = user.getSubscription().getMeals()-1;
+           user.getSubscription().setMeals(updatedMeals);
+           userService.saveUser(user);
+        });
+    }
 }

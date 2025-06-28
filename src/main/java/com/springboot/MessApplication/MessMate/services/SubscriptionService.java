@@ -48,4 +48,10 @@ public class SubscriptionService {
         Subscription subscription = userService.saveUser(user).getSubscription();
         return modelMapper.map(subscription, SubscriptionDto.class);
     }
+
+    public SubscriptionDto getSubscriptionDetails() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Subscription subscription = subscriptionRepository.findByUser_Id(user.getId());
+        return modelMapper.map(subscription, SubscriptionDto.class);
+    }
 }
