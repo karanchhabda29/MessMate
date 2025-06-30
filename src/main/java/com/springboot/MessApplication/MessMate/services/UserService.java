@@ -2,6 +2,7 @@ package com.springboot.MessApplication.MessMate.services;
 
 import com.springboot.MessApplication.MessMate.dto.SignupDto;
 import com.springboot.MessApplication.MessMate.dto.UserDto;
+import com.springboot.MessApplication.MessMate.entities.MealOff;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Role;
@@ -50,6 +51,10 @@ public class UserService implements UserDetailsService {
 
         Subscription subscription = Subscription.builder().status(Status.INACTIVE).build();
         toBeCreatedUser.setSubscription(subscription);
+
+        MealOff mealoff = new  MealOff();
+        toBeCreatedUser.setMealOff(mealoff);
+
         toBeCreatedUser.setPassword(passwordEncoder.encode(signupDto.getPassword()));
         return modelMapper.map(userRepository.save(toBeCreatedUser), UserDto.class);
     }

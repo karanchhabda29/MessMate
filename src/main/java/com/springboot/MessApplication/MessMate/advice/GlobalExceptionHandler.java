@@ -1,5 +1,6 @@
 package com.springboot.MessApplication.MessMate.advice;
 
+import com.springboot.MessApplication.MessMate.exceptions.MealOffDeadlineException;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<ApiResponse<?>> handleJwtException(JwtException exception) {
         ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.UNAUTHORIZED);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(MealOffDeadlineException.class)
+    public ResponseEntity<ApiResponse<?>> handleMealOffDeadlineException(MealOffDeadlineException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
         return buildErrorResponseEntity(apiError);
     }
 

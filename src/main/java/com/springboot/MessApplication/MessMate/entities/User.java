@@ -38,6 +38,10 @@ public class User implements UserDetails {
     private Subscription subscription;
 
 
+    @OneToOne(fetch = FetchType.EAGER , cascade = CascadeType.ALL)
+    private MealOff mealOff;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
