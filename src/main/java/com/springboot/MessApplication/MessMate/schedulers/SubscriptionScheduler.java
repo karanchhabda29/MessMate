@@ -1,5 +1,6 @@
 package com.springboot.MessApplication.MessMate.schedulers;
 
+import com.springboot.MessApplication.MessMate.services.SubscriptionService;
 import com.springboot.MessApplication.MessMate.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

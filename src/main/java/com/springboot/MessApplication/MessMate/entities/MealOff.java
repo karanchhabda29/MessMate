@@ -19,8 +19,12 @@ public class MealOff {
     private Boolean lunch = false;
     private Boolean dinner = false;
 
+    @Enumerated(EnumType.STRING)
     private Meal startMeal;
+
+    @Enumerated(EnumType.STRING)
     private Meal endMeal;
+
 
     private LocalDate startDate;
     private LocalDate endDate;

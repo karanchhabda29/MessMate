@@ -30,7 +30,7 @@ public class MealOffService {
             MealOff mealOff = user.getMealOff();
             mealOff.setLunch(true);
             mealOffRepository.save(mealOff);
-            return new MealOffResponseDto("lunch set off successfully");
+            return modelMapper.map(mealOff, MealOffResponseDto.class);
         }else {
             throw new MealOffDeadlineException("Cannot set lunch off after " + LUNCH_DEADLINE);
         }
@@ -42,13 +42,13 @@ public class MealOffService {
             MealOff mealOff = user.getMealOff();
             mealOff.setDinner(true);
             mealOffRepository.save(mealOff);
-            return new MealOffResponseDto("dinner set off successfully");
+            return modelMapper.map(mealOff, MealOffResponseDto.class);
         }else {
             throw new MealOffDeadlineException("Cannot set dinner off after " + DINNER_DEADLINE);
         }
     }
 
-    public MealOffResponseDto setMealOff(MealOffDto mealOffDto) {
+    public MealOffDto setMealOff(MealOffDto mealOffDto) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(mealOffDto.getStartDate().isAfter(LocalDate.now()) ||
                 (mealOffDto.getStartMeal() == Meal.LUNCH && LocalTime.now().isBefore(LUNCH_DEADLINE)) ||
@@ -57,10 +57,10 @@ public class MealOffService {
             MealOff mealOff = user.getMealOff();
             modelMapper.map(mealOffDto, mealOff);
             mealOffRepository.save(mealOff);
-            return new MealOffResponseDto("meal off set successfully");
+            return modelMapper.map(mealOff, MealOffDto.class);
 
         }else {
-            throw new MealOffDeadlineException("Today's Deadline for "+ mealOffDto.getStartMeal() + " is missed");
+            throw new MealOffDeadlineException("Today's Deadline for "+ mealOffDto.getStartMeal() + " is missed. Please try again");
         }
     }
 

@@ -40,13 +40,13 @@ public class SubscriptionService {
                 collect(Collectors.toList());
     }
 
-    public SubscriptionDto acceptSubscriptionRequestById(Long id) {
+    public SubscriptionDto acceptSubscriptionRequestByUserId(Long id) {
         User user = userService.getUserById(id);
-        user.getSubscription().setStatus(Status.ACTIVE);
-        user.getSubscription().setDate(LocalDateTime.now());
-        user.getSubscription().setMeals(56);
-        Subscription subscription = userService.saveUser(user).getSubscription();
-        return modelMapper.map(subscription, SubscriptionDto.class);
+        Subscription subscription = user.getSubscription();
+        subscription.setStatus(Status.ACTIVE);
+        subscription.setDate(LocalDateTime.now());
+        subscription.setMeals(56);
+        return modelMapper.map(subscriptionRepository.save(subscription), SubscriptionDto.class);
     }
 
     public SubscriptionDto getSubscriptionDetails() {
@@ -54,4 +54,5 @@ public class SubscriptionService {
         Subscription subscription = subscriptionRepository.findByUser_Id(user.getId());
         return modelMapper.map(subscription, SubscriptionDto.class);
     }
+
 }

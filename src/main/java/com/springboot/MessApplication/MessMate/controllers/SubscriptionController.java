@@ -34,8 +34,8 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptionService.getAllRequests());
     }
 
-    @PostMapping("/requests/{id}")
-    public ResponseEntity<SubscriptionDto> acceptSubscriptionRequestById(@PathVariable Long id){
-        return ResponseEntity.ok(subscriptionService.acceptSubscriptionRequestById(id));
+    @PostMapping("/requests/{userId}")
+    public ResponseEntity<SubscriptionDto> acceptSubscriptionRequestByUserId(@PathVariable Long userId){
+        return ResponseEntity.ok(subscriptionService.acceptSubscriptionRequestByUserId(userId));
     }
 }

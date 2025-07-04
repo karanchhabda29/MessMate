@@ -6,6 +6,7 @@ import com.springboot.MessApplication.MessMate.services.MealOffService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -28,7 +29,7 @@ public class MealOffController {
     }
 
     @PostMapping
-    public ResponseEntity<MealOffResponseDto> setMealOff(@RequestBody MealOffDto mealOffDto) {
+    public ResponseEntity<MealOffDto> setMealOff(@RequestBody MealOffDto mealOffDto) {
         return ResponseEntity.ok(mealOffService.setMealOff(mealOffDto));
     }
 
