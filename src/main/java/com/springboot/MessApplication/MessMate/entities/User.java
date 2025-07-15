@@ -41,6 +41,9 @@ public class User implements UserDetails {
     @OneToOne(fetch = FetchType.EAGER , cascade = CascadeType.ALL)
     private MealOff mealOff;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Notification> notifications;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
