@@ -4,7 +4,7 @@ import com.springboot.MessApplication.MessMate.dto.SubscriptionDto;
 import com.springboot.MessApplication.MessMate.dto.UserDto;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
-import com.springboot.MessApplication.MessMate.entities.enums.Status;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.repositories.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,15 +26,15 @@ public class SubscriptionService {
 
     public SubscriptionDto requestNewSubscription() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Subscription subscription = user.getSubscription();
-        subscription.setStatus(Status.REQUESTED);
+        Subscription subscription = getSubscriptionByUser(user);
+        subscription.setStatus(SubscriptionStatus.REQUESTED);
         subscription.setDate(LocalDateTime.now());
         Subscription savedSubscription = subscriptionRepository.save(subscription);
         return modelMapper.map(savedSubscription, SubscriptionDto.class);
     }
 
     public List<UserDto> getAllRequests() {
-        List<Subscription> subscriptions = subscriptionRepository.findByStatus(Status.REQUESTED);
+        List<Subscription> subscriptions = subscriptionRepository.findByStatus(SubscriptionStatus.REQUESTED);
         return subscriptions.stream()
                 .map(subscription -> modelMapper.map(subscription.getUser(), UserDto.class)).
                 collect(Collectors.toList());
@@ -42,8 +42,8 @@ public class SubscriptionService {
 
     public SubscriptionDto acceptSubscriptionRequestByUserId(Long id) {
         User user = userService.getUserById(id);
-        Subscription subscription = user.getSubscription();
-        subscription.setStatus(Status.ACTIVE);
+        Subscription subscription = getSubscriptionByUser(user);
+        subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setDate(LocalDateTime.now());
         subscription.setMeals(56);
         return modelMapper.map(subscriptionRepository.save(subscription), SubscriptionDto.class);
@@ -51,8 +51,15 @@ public class SubscriptionService {
 
     public SubscriptionDto getSubscriptionDetails() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Subscription subscription = subscriptionRepository.findByUser_Id(user.getId());
+        Subscription subscription = getSubscriptionByUser(user);
         return modelMapper.map(subscription, SubscriptionDto.class);
     }
 
+    public Subscription getSubscriptionByUser(User user) {
+        return subscriptionRepository.findByUser(user);
+    }
+
+    public void saveSubscription(Subscription subscription) {
+        subscriptionRepository.save(subscription);
+    }
 }

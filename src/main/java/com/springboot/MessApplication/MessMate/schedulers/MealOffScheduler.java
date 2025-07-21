@@ -21,11 +21,12 @@ public class MealOffScheduler {
     void setLunchOff(){
         userService.getSubscribedUsers().forEach(user -> {
             LocalDate today = LocalDate.now();
-            MealOff mealOff = user.getMealOff();
+            MealOff mealOff = mealOffService.getMealOff(user);
             if((today.equals(mealOff.getStartDate()) && mealOff.getStartMeal().equals(Meal.LUNCH)) ||
                     (today.isAfter(mealOff.getStartDate()) && !today.isAfter(mealOff.getEndDate()))){
                 mealOff.setLunch(true);
                 mealOffService.saveMealOff(mealOff);
+                //TODO createNewNotification
             }
         });
     }
@@ -34,11 +35,12 @@ public class MealOffScheduler {
     void setDinnerOff(){
         userService.getSubscribedUsers().forEach(user -> {
             LocalDate today = LocalDate.now();
-            MealOff mealOff = user.getMealOff();
+            MealOff mealOff = mealOffService.getMealOff(user);
             if((today.equals(mealOff.getEndDate()) && mealOff.getEndMeal().equals(Meal.DINNER)) ||
                     (!today.isBefore(mealOff.getStartDate()) && today.isBefore(mealOff.getEndDate()))){
                 mealOff.setDinner(true);
                 mealOffService.saveMealOff(mealOff);
+                //TODO createNewNotification
             }
         });
     }

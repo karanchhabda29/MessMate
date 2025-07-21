@@ -1,6 +1,6 @@
 package com.springboot.MessApplication.MessMate.entities.enums;
 
-public enum Status {
+public enum SubscriptionStatus {
 
     REQUESTED, ACTIVE, INACTIVE
 }

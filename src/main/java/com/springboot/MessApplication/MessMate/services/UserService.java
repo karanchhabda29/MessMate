@@ -6,7 +6,7 @@ import com.springboot.MessApplication.MessMate.entities.MealOff;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Role;
-import com.springboot.MessApplication.MessMate.entities.enums.Status;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import com.springboot.MessApplication.MessMate.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +50,7 @@ public class UserService implements UserDetailsService {
         User toBeCreatedUser = modelMapper.map(signupDto, User.class);
         toBeCreatedUser.setRole(Role.STUDENT);
 
-        Subscription subscription = Subscription.builder().status(Status.INACTIVE).build();
+        Subscription subscription = Subscription.builder().status(SubscriptionStatus.INACTIVE).build();
         toBeCreatedUser.setSubscription(subscription);
 
         MealOff mealoff = new  MealOff();
@@ -59,11 +60,25 @@ public class UserService implements UserDetailsService {
         return modelMapper.map(userRepository.save(toBeCreatedUser), UserDto.class);
     }
 
-    public User saveUser(User user){
-        return userRepository.save(user);
+    public List<UserDto> getAllUsersFilteredBySubscriptionStatus(SubscriptionStatus status) {
+        List<User> users;
+        if(status!=null){
+            users = userRepository.findBySubscription_Status(status);
+        }else{
+            users = userRepository.findAll();
+        }
+        return users.stream()
+                .map(user -> modelMapper.map(user, UserDto.class))
+                .collect(Collectors.toList());
+    }
+
+    public void saveUser(User user){
+        userRepository.save(user);
     }
 
     public List<User> getSubscribedUsers(){
-        return userRepository.findBySubscription_Status(Status.ACTIVE);
+        return userRepository.findBySubscription_Status(SubscriptionStatus.ACTIVE);
     }
+
+
 }

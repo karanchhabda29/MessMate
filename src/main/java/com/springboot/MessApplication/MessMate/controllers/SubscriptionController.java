@@ -38,4 +38,5 @@ public class SubscriptionController {
     public ResponseEntity<SubscriptionDto> acceptSubscriptionRequestByUserId(@PathVariable Long userId){
         return ResponseEntity.ok(subscriptionService.acceptSubscriptionRequestByUserId(userId));
     }
+
 }

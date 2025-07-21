@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class MealOffDto {
+public class CustomMealOffDto {
 
     private Meal startMeal;
     private Meal endMeal;

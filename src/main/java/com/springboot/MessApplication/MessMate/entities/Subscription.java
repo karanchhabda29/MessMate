@@ -1,14 +1,13 @@
 package com.springboot.MessApplication.MessMate.entities;
 
-import com.springboot.MessApplication.MessMate.entities.enums.Status;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +25,10 @@ public class Subscription {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private SubscriptionStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private SubscriptionType type;
 
     private LocalDateTime date;
 

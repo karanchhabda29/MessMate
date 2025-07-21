@@ -32,7 +32,7 @@ public class AuthController {
     @Value("${deploy.env}")
     private String deployEnv;
 
-
+    
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signup(@RequestBody SignupDto signupDto) {
         UserDto userDto = userService.signup(signupDto);
@@ -62,4 +62,7 @@ public class AuthController {
         LoginResponseDto loginResponseDto = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(loginResponseDto);
     }
+
+    //forgot password
+    //logout
 }
