@@ -5,6 +5,7 @@ import com.springboot.MessApplication.MessMate.dto.UserDto;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import com.springboot.MessApplication.MessMate.repositories.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,5 +62,11 @@ public class SubscriptionService {
 
     public void saveSubscription(Subscription subscription) {
         subscriptionRepository.save(subscription);
+    }
+
+    public SubscriptionDto getSubscriptionDetailsByUserId(long userId) {
+        Subscription subscription = subscriptionRepository.findByUser_Id(userId)
+                .orElseThrow(() ->new ResourceNotFoundException("User with Id " + userId + " doesnot exist"));
+        return modelMapper.map(subscription, SubscriptionDto.class);
     }
 }

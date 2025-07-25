@@ -26,6 +26,6 @@ public class Notification {
     @CreationTimestamp
     private LocalDateTime timestamp;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private User user;
 }

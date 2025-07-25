@@ -4,10 +4,7 @@ import com.springboot.MessApplication.MessMate.dto.UserDto;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.services.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,6 +25,20 @@ public class UserController {
         List<UserDto> users = userService.getAllUsersFilteredBySubscriptionStatus(status);
         return ResponseEntity.ok(users);
     }
+
+    //TODO getUserDetailsById (admin)
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUserProfileById(@PathVariable long id) {
+        return ResponseEntity.ok(userService.getUserProfileById(id));
+    }
+
+    //TODO getMyProfile (student)
+    @GetMapping
+    public ResponseEntity<UserDto> getMyProfile() {
+        return ResponseEntity.ok(userService.getMyProfile());
+    }
+
+    //TODO updateProfile (all)
 
 
 }

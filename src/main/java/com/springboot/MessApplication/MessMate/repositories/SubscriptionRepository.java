@@ -6,10 +6,13 @@ import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription,Long> {
 
     List<Subscription> findByStatus(SubscriptionStatus status);
 
     Subscription findByUser(User user);
+
+    Optional<Subscription> findByUser_Id(long userId);
 }

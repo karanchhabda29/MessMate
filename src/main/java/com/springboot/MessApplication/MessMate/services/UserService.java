@@ -12,6 +12,7 @@ import com.springboot.MessApplication.MessMate.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -81,4 +82,13 @@ public class UserService implements UserDetailsService {
     }
 
 
+    public UserDto getMyProfile() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return modelMapper.map(user, UserDto.class);
+    }
+
+    public UserDto getUserProfileById(long id) {
+        User user = getUserById(id);
+        return modelMapper.map(user, UserDto.class);
+    }
 }
