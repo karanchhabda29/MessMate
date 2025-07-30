@@ -4,14 +4,18 @@ import com.springboot.MessApplication.MessMate.dto.SubscriptionDto;
 import com.springboot.MessApplication.MessMate.dto.UserDto;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
+import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionType;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import com.springboot.MessApplication.MessMate.repositories.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,11 +28,19 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final ModelMapper modelMapper;
     private final UserService userService;
+    private final NotificationService notificationService;
 
-    public SubscriptionDto requestNewSubscription() {
+    public SubscriptionDto requestNewSubscription(SubscriptionType type) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Subscription subscription = getSubscriptionByUser(user);
+        if(subscription.getStatus()==SubscriptionStatus.ACTIVE){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Subscription is already active");
+        }
+        if(subscription.getStatus()==SubscriptionStatus.REQUESTED){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Subscription already requested");
+        }
         subscription.setStatus(SubscriptionStatus.REQUESTED);
+        subscription.setType(type);
         subscription.setDate(LocalDateTime.now());
         Subscription savedSubscription = subscriptionRepository.save(subscription);
         return modelMapper.map(savedSubscription, SubscriptionDto.class);
@@ -68,5 +80,14 @@ public class SubscriptionService {
         Subscription subscription = subscriptionRepository.findByUser_Id(userId)
                 .orElseThrow(() ->new ResourceNotFoundException("User with Id " + userId + " doesnot exist"));
         return modelMapper.map(subscription, SubscriptionDto.class);
+    }
+
+    public boolean updateStatusIfMealsExhausted(Subscription subscription) {
+        if(subscription.getMeals() == 0){
+            subscription.setStatus(SubscriptionStatus.INACTIVE);
+            subscription.setDate(LocalDateTime.now());
+            return true;
+        }
+        return false;
     }
 }

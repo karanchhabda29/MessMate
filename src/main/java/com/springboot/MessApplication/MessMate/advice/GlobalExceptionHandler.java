@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -38,6 +39,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MealOffDeadlineException.class)
     public ResponseEntity<ApiResponse<?>> handleMealOffDeadlineException(MealOffDeadlineException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiResponse<?>> handleResponseStatusException(ResponseStatusException exception) {
         ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
         return buildErrorResponseEntity(apiError);
     }

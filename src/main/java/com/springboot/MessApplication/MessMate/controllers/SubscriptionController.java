@@ -3,6 +3,7 @@ package com.springboot.MessApplication.MessMate.controllers;
 
 import com.springboot.MessApplication.MessMate.dto.SubscriptionDto;
 import com.springboot.MessApplication.MessMate.dto.UserDto;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionType;
 import com.springboot.MessApplication.MessMate.services.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +23,9 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptionService.getSubscriptionDetails());
     }
 
-    @PostMapping("/request-new-subscription")
-    public ResponseEntity<SubscriptionDto> requestNewSubscription(){
-        return ResponseEntity.ok(subscriptionService.requestNewSubscription());
+    @PostMapping("/request-new-subscription/{type}")
+    public ResponseEntity<SubscriptionDto> requestNewSubscription(@PathVariable SubscriptionType type){
+        return ResponseEntity.ok(subscriptionService.requestNewSubscription(type));
     }
 
     @GetMapping("/requests")

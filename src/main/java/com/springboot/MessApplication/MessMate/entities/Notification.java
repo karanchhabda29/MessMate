@@ -3,13 +3,19 @@ package com.springboot.MessApplication.MessMate.entities;
 
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Notification {
 
     @Id
@@ -21,11 +27,12 @@ public class Notification {
 
     private String message;
 
-    private Boolean isRead = false;
+    @Column(nullable = false)
+    private Boolean isRead =  false;
 
     @CreationTimestamp
     private LocalDateTime timestamp;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 }
