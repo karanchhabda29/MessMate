@@ -22,9 +22,19 @@ public class MealOffController {
         return ResponseEntity.ok(mealOffService.setLunchOff());
     }
 
+    @PostMapping("/reverse_lunch")
+    public  ResponseEntity<TodayMealOffDto> setReverseLunchOff() {
+        return ResponseEntity.ok(mealOffService.reverseLunchOff());
+    }
+
     @PostMapping("/dinner")
     public ResponseEntity<TodayMealOffDto> setDinnerOff() {
         return ResponseEntity.ok(mealOffService.setDinnerOff());
+    }
+
+    @PostMapping("/reverse_dinner")
+    public  ResponseEntity<TodayMealOffDto> setReverseDinnerOff() {
+        return ResponseEntity.ok(mealOffService.reverseDinnerOff());
     }
 
     @PostMapping

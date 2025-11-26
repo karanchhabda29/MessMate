@@ -41,12 +41,27 @@ public class MealOffService {
                 MealOff savedMealOff = mealOffRepository.save(mealOff);
                 TodayMealOffDto todayMealOffDto = modelMapper.map(savedMealOff, TodayMealOffDto.class);
                 todayMealOffDto.setMessage("Lunch set off for today successfully");
-                //TODO createNewNotification
-                notificationService.createNotification(user.getId(), NotificationType.MEAL_UPDATE,"Lunch set off for today successfully");
                 return todayMealOffDto;
             }else {
                 throw new MealOffDeadlineException("Cannot set lunch off after " + LUNCH_DEADLINE);
             }
+        }
+    }
+    public TodayMealOffDto reverseLunchOff() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MealOff mealOff = getMealOff(user);
+        if(!mealOff.getLunch()){
+            TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
+            todayMealOffDto.setMessage("Lunch not set off for today");
+            return todayMealOffDto;
+        }else if(LocalTime.now().isBefore(LUNCH_DEADLINE)) {
+            mealOff.setLunch(false);
+            MealOff savedMealOff = mealOffRepository.save(mealOff);
+            TodayMealOffDto todayMealOffDto = modelMapper.map(savedMealOff, TodayMealOffDto.class);
+            todayMealOffDto.setMessage("Lunch off reversed successfully");
+            return todayMealOffDto;
+        }else{
+            throw new MealOffDeadlineException("Cannot reverse Lunch off after " + LUNCH_DEADLINE);
         }
     }
 
@@ -63,12 +78,28 @@ public class MealOffService {
                 MealOff savedMealoff = mealOffRepository.save(mealOff);
                 TodayMealOffDto todayMealOffDto = modelMapper.map(savedMealoff, TodayMealOffDto.class);
                 todayMealOffDto.setMessage("Dinner set off for today successfully");
-                //TODO createNewNotification
-                notificationService.createNotification(user.getId(), NotificationType.MEAL_UPDATE,"Dinner set off for today successfully");
                 return todayMealOffDto;
             }else {
                 throw new MealOffDeadlineException("Cannot set dinner off after " + DINNER_DEADLINE);
             }
+        }
+    }
+
+    public TodayMealOffDto reverseDinnerOff() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MealOff mealOff = getMealOff(user);
+        if(!mealOff.getDinner()){
+            TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
+            todayMealOffDto.setMessage("Dinner not set off for today");
+            return todayMealOffDto;
+        }else if(LocalTime.now().isBefore(DINNER_DEADLINE)) {
+            mealOff.setDinner(false);
+            MealOff savedMealOff = mealOffRepository.save(mealOff);
+            TodayMealOffDto todayMealOffDto = modelMapper.map(savedMealOff, TodayMealOffDto.class);
+            todayMealOffDto.setMessage("Dinner off reversed successfully");
+            return todayMealOffDto;
+        }else{
+            throw new MealOffDeadlineException("Cannot reverse Dinner off after " + DINNER_DEADLINE);
         }
     }
 
@@ -122,4 +153,5 @@ public class MealOffService {
     public void saveMealOff(MealOff mealOff) {
         mealOffRepository.save(mealOff);
     }
+
 }

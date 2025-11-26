@@ -24,11 +24,15 @@ public class SubscriptionScheduler {
     private final SubscriptionService subscriptionService;
     private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 0 15 * * *")
+    @Scheduled(cron = "0 0 16 * * *",zone = "Asia/Kolkata")
     void countLunch() {
         userService.getSubscribedUsers().forEach(user -> {
             MealOff mealOff = mealOffService.getMealOff(user);
             if(mealOff.getLunch()) {
+                //creating notification
+                notificationService.createNotification(
+                        user.getId(), NotificationType.MEAL_UPDATE, "Lunch set off successfully"
+                );
                 mealOff.setLunch(false);
                 mealOffService.saveMealOff(mealOff);
             }else{
@@ -38,11 +42,15 @@ public class SubscriptionScheduler {
         });
     }
 
-    @Scheduled(cron = "0 0 23 * * *")
+    @Scheduled(cron = "0 0 23 * * *", zone = "Asia/Kolkata")
     void countDinner() {
         userService.getSubscribedUsers().forEach(user -> {
             MealOff mealOff = mealOffService.getMealOff(user);
             if(mealOff.getDinner()) {
+                //creating notification
+                notificationService.createNotification(
+                        user.getId(), NotificationType.MEAL_UPDATE, "Dinner set off successfully"
+                );
                 mealOff.setDinner(false);
                 mealOffService.saveMealOff(mealOff);
             }else{

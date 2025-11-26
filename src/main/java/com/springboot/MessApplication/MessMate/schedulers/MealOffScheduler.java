@@ -18,9 +18,8 @@ public class MealOffScheduler {
 
     private final UserService userService;
     private final MealOffService mealOffService;
-    private final NotificationService notificationService;
 
-    @Scheduled(cron = "0 1 8 * * *")
+    @Scheduled(cron = "0 1 8 * * *",zone = "Asia/Kolkata")
     void setLunchOff(){
         userService.getSubscribedUsers().forEach(user -> {
             LocalDate today = LocalDate.now();
@@ -36,15 +35,11 @@ public class MealOffScheduler {
                     (today.isAfter(mealOff.getStartDate()) && !today.isAfter(mealOff.getEndDate()))){
                 mealOff.setLunch(true);
                 mealOffService.saveMealOff(mealOff);
-                //creating notification
-                notificationService.createNotification(
-                        user.getId(), NotificationType.MEAL_UPDATE, "Lunch set off successfully"
-                );
             }
         });
     }
 
-    @Scheduled(cron = "0 1 16 * * *")
+    @Scheduled(cron = "0 1 16 * * *",zone = "Asia/Kolkata")
     void setDinnerOff(){
         userService.getSubscribedUsers().forEach(user -> {
             LocalDate today = LocalDate.now();
@@ -60,10 +55,6 @@ public class MealOffScheduler {
                     (!today.isBefore(mealOff.getStartDate()) && today.isBefore(mealOff.getEndDate()))){
                 mealOff.setDinner(true);
                 mealOffService.saveMealOff(mealOff);
-                //creating notification
-                notificationService.createNotification(
-                        user.getId(), NotificationType.MEAL_UPDATE, "Dinner set off successfully"
-                );
             }
         });
     }
