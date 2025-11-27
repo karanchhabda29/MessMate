@@ -2,6 +2,7 @@ package com.springboot.MessApplication.MessMate.advice;
 
 import com.springboot.MessApplication.MessMate.exceptions.MealOffDeadlineException;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
+import com.springboot.MessApplication.MessMate.exceptions.UserNotSubscribedException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiResponse<?>> handleResponseStatusException(ResponseStatusException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(UserNotSubscribedException.class)
+    public ResponseEntity<ApiResponse<?>> handleUserNotSubscribedException(UserNotSubscribedException exception) {
         ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
         return buildErrorResponseEntity(apiError);
     }

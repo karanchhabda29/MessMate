@@ -35,6 +35,12 @@ public class MealOffScheduler {
                     (today.isAfter(mealOff.getStartDate()) && !today.isAfter(mealOff.getEndDate()))){
                 mealOff.setLunch(true);
                 mealOffService.saveMealOff(mealOff);
+            }else if(today.isAfter(mealOff.getEndDate())){
+                mealOff.setStartMeal(null);
+                mealOff.setEndMeal(null);
+                mealOff.setStartDate(null);
+                mealOff.setEndDate(null);
+                mealOffService.saveMealOff(mealOff);
             }
         });
     }
@@ -54,6 +60,12 @@ public class MealOffScheduler {
             if((today.equals(mealOff.getEndDate()) && mealOff.getEndMeal().equals(Meal.DINNER)) ||
                     (!today.isBefore(mealOff.getStartDate()) && today.isBefore(mealOff.getEndDate()))){
                 mealOff.setDinner(true);
+                mealOffService.saveMealOff(mealOff);
+            }else if(today.equals(mealOff.getEndDate())){
+                mealOff.setStartMeal(null);
+                mealOff.setEndMeal(null);
+                mealOff.setStartDate(null);
+                mealOff.setEndDate(null);
                 mealOffService.saveMealOff(mealOff);
             }
         });

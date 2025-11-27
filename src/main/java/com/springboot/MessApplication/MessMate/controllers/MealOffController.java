@@ -22,9 +22,9 @@ public class MealOffController {
         return ResponseEntity.ok(mealOffService.setLunchOff());
     }
 
-    @PostMapping("/reverse_lunch")
-    public  ResponseEntity<TodayMealOffDto> setReverseLunchOff() {
-        return ResponseEntity.ok(mealOffService.reverseLunchOff());
+    @DeleteMapping("/lunch")
+    public  ResponseEntity<TodayMealOffDto> cancelLunchOff() {
+        return ResponseEntity.ok(mealOffService.cancelLunchOff());
     }
 
     @PostMapping("/dinner")
@@ -32,14 +32,19 @@ public class MealOffController {
         return ResponseEntity.ok(mealOffService.setDinnerOff());
     }
 
-    @PostMapping("/reverse_dinner")
-    public  ResponseEntity<TodayMealOffDto> setReverseDinnerOff() {
-        return ResponseEntity.ok(mealOffService.reverseDinnerOff());
+    @DeleteMapping("/dinner")
+    public  ResponseEntity<TodayMealOffDto> cancelDinnerOff() {
+        return ResponseEntity.ok(mealOffService.cancelDinnerOff());
     }
 
     @PostMapping
     public ResponseEntity<CustomMealOffDto> setMealOff(@RequestBody CustomMealOffDto mealOffDto) {
         return ResponseEntity.ok(mealOffService.setCustomMealOff(mealOffDto));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<CustomMealOffDto> cancelMealOff(){
+        return ResponseEntity.ok(mealOffService.cancelCustomMealOff());
     }
 
     //getMealOffDetails
@@ -54,8 +59,5 @@ public class MealOffController {
         return ResponseEntity.ok(mealOffService.getCustomMealOffDetails());
     }
 
-    //cancel today lunch off
-    //cancel today dinner off
 
-    //cancel custom off
 }

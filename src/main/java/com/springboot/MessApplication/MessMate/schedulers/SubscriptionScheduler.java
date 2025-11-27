@@ -3,6 +3,7 @@ package com.springboot.MessApplication.MessMate.schedulers;
 import com.springboot.MessApplication.MessMate.entities.MealOff;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
+import com.springboot.MessApplication.MessMate.entities.enums.Meal;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
 import com.springboot.MessApplication.MessMate.services.MealOffService;
 import com.springboot.MessApplication.MessMate.services.NotificationService;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
 
 
 @Component
@@ -31,12 +34,12 @@ public class SubscriptionScheduler {
             if(mealOff.getLunch()) {
                 //creating notification
                 notificationService.createNotification(
-                        user.getId(), NotificationType.MEAL_UPDATE, "Lunch set off successfully"
+                        user.getId(), NotificationType.MEAL_UPDATE, "Lunch set off successfully for " + LocalDate.now()
                 );
                 mealOff.setLunch(false);
                 mealOffService.saveMealOff(mealOff);
             }else{
-                countMeal(user);
+                countMeal(user,Meal.LUNCH);
                 log.info("lunch counted successfully for {}", user.getName());
             }
         });
@@ -49,21 +52,25 @@ public class SubscriptionScheduler {
             if(mealOff.getDinner()) {
                 //creating notification
                 notificationService.createNotification(
-                        user.getId(), NotificationType.MEAL_UPDATE, "Dinner set off successfully"
+                        user.getId(), NotificationType.MEAL_UPDATE, "Dinner set off successfully for " + LocalDate.now()
                 );
                 mealOff.setDinner(false);
                 mealOffService.saveMealOff(mealOff);
             }else{
-                countMeal(user);
+                countMeal(user,Meal.DINNER);
                 log.info("dinner counted successfully for {}", user.getName());
             }
         });
     }
 
-    private void countMeal(User user) {
+    private void countMeal(User user, Meal meal) {
         Subscription subscription = subscriptionService.getSubscriptionByUser(user);
         int updatedMeals = subscription.getMeals()-1;
         subscription.setMeals(updatedMeals);
+        //create notification
+        notificationService.createNotification(
+                user.getId(), NotificationType.MEAL_UPDATE, "Your " + meal + " counted successfully for " + LocalDate.now()
+        );
         if(subscriptionService.updateStatusIfMealsExhausted(subscription)){
             notificationService.createNotification(user.getId(), NotificationType.SUBSCRIPTION_EXPIRY, "Your Subscription has expired");
         }

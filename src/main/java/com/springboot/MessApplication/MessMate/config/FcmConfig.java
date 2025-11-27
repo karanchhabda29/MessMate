@@ -10,9 +10,9 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 
-//@Configuration
-//public class FcmConfig {
-//
+@Configuration
+public class FcmConfig {
+
 //    @Bean
 //    FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
 //        return FirebaseMessaging.getInstance(firebaseApp);
@@ -31,4 +31,4 @@ import java.io.IOException;
 //    GoogleCredentials googleCredentials() throws IOException {
 //        return GoogleCredentials.getApplicationDefault();
 //    }
-//}
+}

@@ -3,10 +3,14 @@ package com.springboot.MessApplication.MessMate.services;
 import com.springboot.MessApplication.MessMate.dto.CustomMealOffDto;
 import com.springboot.MessApplication.MessMate.dto.TodayMealOffDto;
 import com.springboot.MessApplication.MessMate.entities.MealOff;
+import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Meal;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.exceptions.MealOffDeadlineException;
+import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
+import com.springboot.MessApplication.MessMate.exceptions.UserNotSubscribedException;
 import com.springboot.MessApplication.MessMate.repositories.MealOffRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +32,11 @@ public class MealOffService {
     private final MealOffRepository mealOffRepository;
     private final ModelMapper modelMapper;
     private final NotificationService notificationService;
+    private final SubscriptionService subscriptionService;
 
     public TodayMealOffDto setLunchOff() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
         MealOff mealOff = getMealOff(user);
         if(mealOff.getLunch()){
             TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
@@ -47,8 +54,9 @@ public class MealOffService {
             }
         }
     }
-    public TodayMealOffDto reverseLunchOff() {
+    public TodayMealOffDto cancelLunchOff() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
         MealOff mealOff = getMealOff(user);
         if(!mealOff.getLunch()){
             TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
@@ -58,15 +66,16 @@ public class MealOffService {
             mealOff.setLunch(false);
             MealOff savedMealOff = mealOffRepository.save(mealOff);
             TodayMealOffDto todayMealOffDto = modelMapper.map(savedMealOff, TodayMealOffDto.class);
-            todayMealOffDto.setMessage("Lunch off reversed successfully");
+            todayMealOffDto.setMessage("Lunch off cancelled successfully");
             return todayMealOffDto;
         }else{
-            throw new MealOffDeadlineException("Cannot reverse Lunch off after " + LUNCH_DEADLINE);
+            throw new MealOffDeadlineException("Cannot cancel Lunch off after " + LUNCH_DEADLINE);
         }
     }
 
     public TodayMealOffDto setDinnerOff() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
         MealOff mealOff = getMealOff(user);
         if(mealOff.getDinner()) {
             TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
@@ -85,8 +94,9 @@ public class MealOffService {
         }
     }
 
-    public TodayMealOffDto reverseDinnerOff() {
+    public TodayMealOffDto cancelDinnerOff() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
         MealOff mealOff = getMealOff(user);
         if(!mealOff.getDinner()){
             TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
@@ -96,15 +106,16 @@ public class MealOffService {
             mealOff.setDinner(false);
             MealOff savedMealOff = mealOffRepository.save(mealOff);
             TodayMealOffDto todayMealOffDto = modelMapper.map(savedMealOff, TodayMealOffDto.class);
-            todayMealOffDto.setMessage("Dinner off reversed successfully");
+            todayMealOffDto.setMessage("Dinner off cancelled successfully");
             return todayMealOffDto;
         }else{
-            throw new MealOffDeadlineException("Cannot reverse Dinner off after " + DINNER_DEADLINE);
+            throw new MealOffDeadlineException("Cannot cancel Dinner off after " + DINNER_DEADLINE);
         }
     }
 
     public CustomMealOffDto setCustomMealOff(CustomMealOffDto mealOffDto) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
         if(mealOffDto.getStartDate().isBefore(LocalDate.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Start date cannot be before current date");
         }
@@ -125,22 +136,45 @@ public class MealOffService {
             MealOff mealOff = getMealOff(user);
             modelMapper.map(mealOffDto, mealOff);
             MealOff savedMealOff = mealOffRepository.save(mealOff);
-            //TODO createNewNotification
-             notificationService.createNotification(user.getId(), NotificationType.MEAL_UPDATE,"Meals set off successfully");
+            //creating notification
+            String message = "Meals set off successfully from " +savedMealOff.getStartDate() + " " + savedMealOff.getStartMeal() + " to " +savedMealOff.getEndDate() + " " +  savedMealOff.getEndMeal();
+            notificationService.createNotification(user.getId(), NotificationType.MEAL_UPDATE,message);
             return modelMapper.map(savedMealOff, CustomMealOffDto.class);
         }else {
             throw new MealOffDeadlineException("Today's Deadline for "+ mealOffDto.getStartMeal() + " is missed. Please try again");
         }
     }
 
+    public CustomMealOffDto cancelCustomMealOff() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
+        MealOff mealOff = getMealOff(user);
+        //check if meal off exists or not
+        if (mealOff.getStartDate() == null || mealOff.getEndDate() == null ||
+                mealOff.getStartMeal() == null || mealOff.getEndMeal() == null){
+            throw new ResourceNotFoundException("No existing meal off found");
+        }else{
+            mealOff.setStartMeal(null);
+            mealOff.setEndMeal(null);
+            mealOff.setStartDate(null);
+            mealOff.setEndDate(null);
+            //creating notification
+            notificationService.createNotification(user.getId(), NotificationType.MEAL_UPDATE, "your custom meal off has been cancelled");
+            return modelMapper.map(mealOffRepository.save(mealOff), CustomMealOffDto.class);
+        }
+    }
+
+
     public TodayMealOffDto getTodayMealOffDetails() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
         MealOff mealOff = getMealOff(user);
         return modelMapper.map(mealOff, TodayMealOffDto.class);
     }
 
     public CustomMealOffDto getCustomMealOffDetails() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        checkSubscriptionStatus(user);
         MealOff mealOff = getMealOff(user);
         return modelMapper.map(mealOff, CustomMealOffDto.class);
     }
@@ -152,6 +186,13 @@ public class MealOffService {
 
     public void saveMealOff(MealOff mealOff) {
         mealOffRepository.save(mealOff);
+    }
+
+    public void checkSubscriptionStatus(User user) {
+        Subscription subscription = subscriptionService.getSubscriptionByUser(user);
+        if(Set.of(SubscriptionStatus.INACTIVE,SubscriptionStatus.REQUESTED).contains(subscription.getStatus()) ){
+            throw new UserNotSubscribedException("User not subscribed");
+        }
     }
 
 }

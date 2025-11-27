@@ -1,10 +1,7 @@
 package com.springboot.MessApplication.MessMate.controllers;
 
 
-import com.springboot.MessApplication.MessMate.dto.LoginDto;
-import com.springboot.MessApplication.MessMate.dto.LoginResponseDto;
-import com.springboot.MessApplication.MessMate.dto.SignupDto;
-import com.springboot.MessApplication.MessMate.dto.UserDto;
+import com.springboot.MessApplication.MessMate.dto.*;
 import com.springboot.MessApplication.MessMate.services.AuthService;
 import com.springboot.MessApplication.MessMate.services.UserService;
 import jakarta.servlet.http.Cookie;
@@ -52,14 +49,14 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponseDto> refresh(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = Arrays.stream(request.getCookies())
-                .filter(c -> c.getName().equals("refreshToken"))
-                .findFirst()
-                .map(Cookie::getValue)
-                .orElseThrow(() -> new AuthenticationServiceException("refreshToken not found in the cookies"));
+    public ResponseEntity<LoginResponseDto> refresh(@RequestBody RefreshTokenDto refreshTokenDto) {
+//        String refreshToken = Arrays.stream(request.getCookies())
+//                .filter(c -> c.getName().equals("refreshToken"))
+//                .findFirst()
+//                .map(Cookie::getValue)
+//                .orElseThrow(() -> new AuthenticationServiceException("refreshToken not found in the cookies"));
 
-        LoginResponseDto loginResponseDto = authService.refreshToken(refreshToken);
+        LoginResponseDto loginResponseDto = authService.refreshToken(refreshTokenDto.getRefreshToken());
         return ResponseEntity.ok(loginResponseDto);
     }
 
