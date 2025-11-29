@@ -14,6 +14,7 @@ import java.util.TimeZone;
 public class MessMateApplication {
 
 	public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Kolkata"));
         SpringApplication.run(MessMateApplication.class, args);
 	}
     @PostConstruct
