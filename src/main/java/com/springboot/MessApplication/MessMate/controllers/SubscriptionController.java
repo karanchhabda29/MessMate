@@ -28,10 +28,6 @@ public class SubscriptionController {
         return ResponseEntity.ok(subscriptionService.requestNewSubscription(type));
     }
 
-    @GetMapping("/requests")
-    public ResponseEntity<List<UserDto>> requests(){
-        return ResponseEntity.ok(subscriptionService.getAllRequests());
-    }
 
     @PostMapping("/requests/{userId}")
     public ResponseEntity<SubscriptionDto> acceptSubscriptionRequestByUserId(@PathVariable Long userId){
@@ -42,6 +38,11 @@ public class SubscriptionController {
     @GetMapping("/{userId}")
     public ResponseEntity<SubscriptionDto> getSubscriptionDetailsByUserId(@PathVariable long userId){
         return ResponseEntity.ok(subscriptionService.getSubscriptionDetailsByUserId(userId));
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<SubscriptionDto> updateSubscriptionByUserId(@PathVariable long userId,@RequestBody SubscriptionDto subscriptionDto){
+        return ResponseEntity.ok(subscriptionService.updateSubscriptionByUserId(userId,subscriptionDto));
     }
 
 }

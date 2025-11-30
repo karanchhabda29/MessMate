@@ -1,6 +1,7 @@
 package com.springboot.MessApplication.MessMate.controllers;
 
 import com.springboot.MessApplication.MessMate.dto.UserDto;
+import com.springboot.MessApplication.MessMate.dto.UserListDto;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +18,11 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<UserDto>> getAllUsers(
+    public ResponseEntity<UserListDto> getAllUsers(
             @RequestParam(value = "status" , required = false) SubscriptionStatus status
     ) {
-        List<UserDto> users = userService.getAllUsersFilteredBySubscriptionStatus(status);
-        return ResponseEntity.ok(users);
+        UserListDto userListDto = userService.getAllUsersFilteredBySubscriptionStatus(status);
+        return ResponseEntity.ok(userListDto);
     }
 
     //TODO getUserDetailsById (admin)

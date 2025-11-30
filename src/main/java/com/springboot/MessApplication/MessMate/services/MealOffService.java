@@ -2,6 +2,8 @@ package com.springboot.MessApplication.MessMate.services;
 
 import com.springboot.MessApplication.MessMate.dto.CustomMealOffDto;
 import com.springboot.MessApplication.MessMate.dto.TodayMealOffDto;
+import com.springboot.MessApplication.MessMate.dto.UserDto;
+import com.springboot.MessApplication.MessMate.dto.UserListDto;
 import com.springboot.MessApplication.MessMate.entities.MealOff;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
@@ -21,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -33,6 +36,7 @@ public class MealOffService {
     private final ModelMapper modelMapper;
     private final NotificationService notificationService;
     private final SubscriptionService subscriptionService;
+    private final UserService userService;
 
     public TodayMealOffDto setLunchOff() {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -179,6 +183,28 @@ public class MealOffService {
         return modelMapper.map(mealOff, CustomMealOffDto.class);
     }
 
+    public UserListDto getAllLunchOffs() {
+        List<User> lunchOffUsers = userService.getLunchOffUsers();
+        List<UserDto> lunchOffUserDtos = lunchOffUsers
+                .stream()
+                .map(
+                user -> modelMapper.map(user,UserDto.class)
+                )
+                .toList();
+        return new UserListDto(lunchOffUserDtos.size(), lunchOffUserDtos);
+    }
+
+    public UserListDto getAllDinnerOffs() {
+        List<User> dinnerOffUsers = userService.getDinnerOffUsers();
+        List<UserDto> dinnerOffUserDtos = dinnerOffUsers
+                .stream()
+                .map(
+                        user -> modelMapper.map(user,UserDto.class)
+                )
+                .toList();
+        return new UserListDto(dinnerOffUserDtos.size(), dinnerOffUserDtos);
+    }
+
     // non-controller methods
     public MealOff getMealOff(User user) {
         return mealOffRepository.findByUser(user);
@@ -189,7 +215,7 @@ public class MealOffService {
     }
 
     public void checkSubscriptionStatus(User user) {
-        Subscription subscription = subscriptionService.getSubscriptionByUser(user);
+        Subscription subscription = subscriptionService.getSubscriptionByUserId(user.getId());
         if(Set.of(SubscriptionStatus.INACTIVE,SubscriptionStatus.REQUESTED).contains(subscription.getStatus()) ){
             throw new UserNotSubscribedException("User not subscribed");
         }

@@ -1,7 +1,6 @@
 package com.springboot.MessApplication.MessMate.services;
 
 import com.springboot.MessApplication.MessMate.dto.SubscriptionDto;
-import com.springboot.MessApplication.MessMate.dto.UserDto;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
@@ -18,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +27,15 @@ public class SubscriptionService {
     private final UserService userService;
     private final NotificationService notificationService;
 
+    public SubscriptionDto getSubscriptionDetails() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Subscription subscription = getSubscriptionByUserId(user.getId());
+        return modelMapper.map(subscription, SubscriptionDto.class);
+    }
+
     public SubscriptionDto requestNewSubscription(SubscriptionType type) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Subscription subscription = getSubscriptionByUser(user);
+        Subscription subscription = getSubscriptionByUserId(user.getId());
         if(subscription.getStatus()==SubscriptionStatus.ACTIVE){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Subscription is already active");
         }
@@ -46,34 +49,14 @@ public class SubscriptionService {
         return modelMapper.map(savedSubscription, SubscriptionDto.class);
     }
 
-    public List<UserDto> getAllRequests() {
-        List<Subscription> subscriptions = subscriptionRepository.findByStatus(SubscriptionStatus.REQUESTED);
-        return subscriptions.stream()
-                .map(subscription -> modelMapper.map(subscription.getUser(), UserDto.class)).
-                collect(Collectors.toList());
-    }
 
     public SubscriptionDto acceptSubscriptionRequestByUserId(Long id) {
         User user = userService.getUserById(id);
-        Subscription subscription = getSubscriptionByUser(user);
+        Subscription subscription = getSubscriptionByUserId(user.getId());
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setDate(LocalDateTime.now());
         subscription.setMeals(56);
         return modelMapper.map(subscriptionRepository.save(subscription), SubscriptionDto.class);
-    }
-
-    public SubscriptionDto getSubscriptionDetails() {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Subscription subscription = getSubscriptionByUser(user);
-        return modelMapper.map(subscription, SubscriptionDto.class);
-    }
-
-    public Subscription getSubscriptionByUser(User user) {
-        return subscriptionRepository.findByUser(user);
-    }
-
-    public void saveSubscription(Subscription subscription) {
-        subscriptionRepository.save(subscription);
     }
 
     public SubscriptionDto getSubscriptionDetailsByUserId(long userId) {
@@ -82,12 +65,33 @@ public class SubscriptionService {
         return modelMapper.map(subscription, SubscriptionDto.class);
     }
 
-    public boolean updateStatusIfMealsExhausted(Subscription subscription) {
+    public SubscriptionDto updateSubscriptionByUserId(long userId, SubscriptionDto subscriptionDto) {
+        Subscription subscription = getSubscriptionByUserId(userId);
+        subscription.setMeals(subscriptionDto.getMeals());
+        notificationService.createNotification(userId,NotificationType.MEAL_UPDATE,"Your meal count has been updated to "+ subscriptionDto.getMeals()+" by admin");
+        updateStatusIfMealsExhausted(userId,subscription);
+        return modelMapper.map(subscriptionRepository.save(subscription),SubscriptionDto.class);
+    }
+
+    //non-controller methods
+
+    public Subscription getSubscriptionByUserId(Long userId) {
+        return subscriptionRepository.findByUser_Id(userId)
+                .orElseThrow(() ->new ResourceNotFoundException("User with Id " + userId + " doesnot exist"));
+    }
+
+    public void saveSubscription(Subscription subscription) {
+        subscriptionRepository.save(subscription);
+    }
+
+
+    public void updateStatusIfMealsExhausted(long userId,Subscription subscription) {
         if(subscription.getMeals() == 0){
             subscription.setStatus(SubscriptionStatus.INACTIVE);
             subscription.setDate(LocalDateTime.now());
-            return true;
+            notificationService.createNotification(userId, NotificationType.SUBSCRIPTION_EXPIRY, "Your Subscription has expired");
         }
-        return false;
     }
+
+
 }

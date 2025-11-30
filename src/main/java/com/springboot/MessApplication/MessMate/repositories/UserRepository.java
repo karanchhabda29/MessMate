@@ -11,4 +11,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(java.lang.String email);
 
     List<User> findBySubscription_Status(SubscriptionStatus status);
+
+    List<User> findBySubscription_StatusAndMealOff_Lunch(SubscriptionStatus subscriptionStatus, Boolean mealOffLunch);
+
+    List<User> findBySubscription_StatusAndMealOff_Dinner(SubscriptionStatus subscriptionStatus, Boolean mealOffDinner);
 }

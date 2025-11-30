@@ -64,16 +64,14 @@ public class SubscriptionScheduler {
     }
 
     private void countMeal(User user, Meal meal) {
-        Subscription subscription = subscriptionService.getSubscriptionByUser(user);
+        Subscription subscription = subscriptionService.getSubscriptionByUserId(user.getId());
         int updatedMeals = subscription.getMeals()-1;
         subscription.setMeals(updatedMeals);
         //create notification
         notificationService.createNotification(
                 user.getId(), NotificationType.MEAL_UPDATE, "Your " + meal + " counted successfully for " + LocalDate.now()
         );
-        if(subscriptionService.updateStatusIfMealsExhausted(subscription)){
-            notificationService.createNotification(user.getId(), NotificationType.SUBSCRIPTION_EXPIRY, "Your Subscription has expired");
-        }
+        subscriptionService.updateStatusIfMealsExhausted(user.getId(),subscription);
         subscriptionService.saveSubscription(subscription);
     }
 
