@@ -1,9 +1,6 @@
 package com.springboot.MessApplication.MessMate.controllers;
 
-import com.springboot.MessApplication.MessMate.dto.CustomMealOffDto;
-import com.springboot.MessApplication.MessMate.dto.TodayMealOffDto;
-import com.springboot.MessApplication.MessMate.dto.UserDto;
-import com.springboot.MessApplication.MessMate.dto.UserListDto;
+import com.springboot.MessApplication.MessMate.dto.*;
 import com.springboot.MessApplication.MessMate.services.MealOffService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +70,12 @@ public class MealOffController {
     @GetMapping("/dinner_offs")
     public ResponseEntity<UserListDto> getAllDinnerOffs(){
         return ResponseEntity.ok(mealOffService.getAllDinnerOffs());
+    }
+
+    //get all custom meal off (for admin)
+    @GetMapping("/custom_offs")
+    public ResponseEntity<List<CustomOffDetailDto>> getAllCustomOffDetails(){
+        return ResponseEntity.ok(mealOffService.getAllCustomOffs());
     }
 
 }

@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface MealOffRepository extends JpaRepository<MealOff,Long> {
-    MealOff findByUser(User user);
+    MealOff findByUser_Id(Long userId);
+
+    List<MealOff> findAllByCustomOff(Boolean customOff);
 }

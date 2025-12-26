@@ -5,6 +5,7 @@ import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Meal;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.services.MealOffService;
 import com.springboot.MessApplication.MessMate.services.NotificationService;
 import com.springboot.MessApplication.MessMate.services.SubscriptionService;
@@ -15,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Component
@@ -30,7 +32,7 @@ public class SubscriptionScheduler {
     @Scheduled(cron = "0 0 16 * * *",zone = "Asia/Kolkata")
     void countLunch() {
         userService.getSubscribedUsers().forEach(user -> {
-            MealOff mealOff = mealOffService.getMealOff(user);
+            MealOff mealOff = mealOffService.getMealOff(user.getId());
             if(mealOff.getLunch()) {
                 //creating notification
                 notificationService.createNotification(
@@ -39,8 +41,12 @@ public class SubscriptionScheduler {
                 mealOff.setLunch(false);
                 mealOffService.saveMealOff(mealOff);
             }else{
-                countMeal(user,Meal.LUNCH);
+                Subscription updatedSubscription = countMeal(user,Meal.LUNCH);
                 log.info("lunch counted successfully for {}", user.getName());
+                if(updatedSubscription.getStatus().equals(SubscriptionStatus.INACTIVE)) {
+                    notificationService.createNotification(user.getId(), NotificationType.SUBSCRIPTION_EXPIRY, "Your subscription expired on " + LocalDate.now());
+                    mealOffService.cancelCustomMealOffIfExists(mealOff);
+                }
             }
         });
     }
@@ -48,7 +54,7 @@ public class SubscriptionScheduler {
     @Scheduled(cron = "0 0 23 * * *", zone = "Asia/Kolkata")
     void countDinner() {
         userService.getSubscribedUsers().forEach(user -> {
-            MealOff mealOff = mealOffService.getMealOff(user);
+            MealOff mealOff = mealOffService.getMealOff(user.getId());
             if(mealOff.getDinner()) {
                 //creating notification
                 notificationService.createNotification(
@@ -57,22 +63,26 @@ public class SubscriptionScheduler {
                 mealOff.setDinner(false);
                 mealOffService.saveMealOff(mealOff);
             }else{
-                countMeal(user,Meal.DINNER);
+                Subscription updatedSubscription = countMeal(user,Meal.DINNER);
                 log.info("dinner counted successfully for {}", user.getName());
+                if(updatedSubscription.getStatus().equals(SubscriptionStatus.INACTIVE)) {
+                    notificationService.createNotification(user.getId(), NotificationType.SUBSCRIPTION_EXPIRY, "Your subscription expired on " + LocalDate.now());
+                    mealOffService.cancelCustomMealOffIfExists(mealOff);
+                }
             }
         });
     }
 
-    private void countMeal(User user, Meal meal) {
+    private Subscription countMeal(User user, Meal meal) {
         Subscription subscription = subscriptionService.getSubscriptionByUserId(user.getId());
         int updatedMeals = subscription.getMeals()-1;
         subscription.setMeals(updatedMeals);
-        //create notification
+        subscriptionService.updateStatusIfMealsExhausted(subscription);
+        Subscription savedSubscription = subscriptionService.saveSubscription(subscription);
         notificationService.createNotification(
                 user.getId(), NotificationType.MEAL_UPDATE, "Your " + meal + " counted successfully for " + LocalDate.now()
         );
-        subscriptionService.updateStatusIfMealsExhausted(user.getId(),subscription);
-        subscriptionService.saveSubscription(subscription);
+        return savedSubscription;
     }
 
 }
