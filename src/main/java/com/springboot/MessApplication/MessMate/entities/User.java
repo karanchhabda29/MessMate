@@ -8,6 +8,7 @@ import lombok.*;
 import org.checkerframework.common.aliasing.qual.Unique;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -46,10 +47,12 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL) //fetch type is lazy by default in one to many
     private List<Notification> notifications;
 
+    private String address;
+    private String contact;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.getRole().name()));
     }
 
     @Override

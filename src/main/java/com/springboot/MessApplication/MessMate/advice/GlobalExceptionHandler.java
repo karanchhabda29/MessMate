@@ -1,5 +1,6 @@
 package com.springboot.MessApplication.MessMate.advice;
 
+import com.springboot.MessApplication.MessMate.exceptions.InvalidMealOffStateException;
 import com.springboot.MessApplication.MessMate.exceptions.MealOffDeadlineException;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import com.springboot.MessApplication.MessMate.exceptions.UserNotSubscribedException;
@@ -52,6 +53,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotSubscribedException.class)
     public ResponseEntity<ApiResponse<?>> handleUserNotSubscribedException(UserNotSubscribedException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(InvalidMealOffStateException.class)
+    public ResponseEntity<ApiResponse<?>> handleInvalidMealOffStateException(InvalidMealOffStateException exception) {
         ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
         return buildErrorResponseEntity(apiError);
     }

@@ -22,10 +22,16 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserService userService;
 
-    public List<NotificationDto> getAllNotifications() {
+    public List<NotificationDto> getAllNotifications(NotificationType type) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        List<Notification> notifications = notificationRepository.findByUserOrderByIsReadAscTimestampDesc(user);
+        List<Notification> notifications;
+        if(type==null){
+            notifications = notificationRepository.findByUserOrderByIsReadAscTimestampDesc(user);
+        }else{
+            notifications = notificationRepository.findByUserAndTypeOrderByIsReadAscTimestampDesc(user,type);
+        }
+
 
         List<NotificationDto> notificationDtoList = notifications.stream()
                 .map(notification -> modelMapper.map(notification, NotificationDto.class))

@@ -7,11 +7,12 @@ import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MealOffRepository extends JpaRepository<MealOff,Long> {
-    MealOff findByUser_Id(Long userId);
+    Optional<MealOff> findByUser_Id(Long userId);
 
-    List<MealOff> findAllByCustomOff(Boolean customOff);
+    List<MealOff> findAllByCustomOffAndUser_Subscription_Status(Boolean customOff, SubscriptionStatus userSubscriptionStatus);
 
     List<MealOff> findAllByLunchAndUser_Subscription_Status(Boolean lunch, SubscriptionStatus subscriptionStatus);
 
