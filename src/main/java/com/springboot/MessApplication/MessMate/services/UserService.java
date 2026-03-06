@@ -8,6 +8,7 @@ import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Role;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionType;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import com.springboot.MessApplication.MessMate.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -57,16 +58,21 @@ public class UserService implements UserDetailsService {
         return modelMapper.map(userRepository.save(toBeCreatedUser), UserDto.class);
     }
 
-    public UserListDto getAllUsersFilteredBySubscriptionStatus(SubscriptionStatus status) {
+    public UserListDto getAllUsersFilteredBySubscriptionStatusAndType(SubscriptionStatus status, SubscriptionType type) {
         List<User> users;
         if(status!=null){
-            users = userRepository.findBySubscription_Status(status);
+            if(status == SubscriptionStatus.ACTIVE && type!=null){
+                users = userRepository.findBySubscription_statusAndSubscription_type(status,type);
+            }else{
+                users = userRepository.findBySubscription_Status(status);
+            }
+
         }else{
             users = userRepository.findAll();
         }
         List<UserDto> usersDtos = users.stream()
                 .map(user -> modelMapper.map(user, UserDto.class))
-                .collect(Collectors.toList());
+                .toList();
         return new UserListDto(usersDtos.size(),usersDtos);
     }
 
@@ -96,6 +102,15 @@ public class UserService implements UserDetailsService {
 
     public List<User> getSubscribedUsers(){
         return userRepository.findBySubscription_Status(SubscriptionStatus.ACTIVE);
+    }
+
+    public User findByEmail(String email){
+        return userRepository.findByEmail(email)
+                .orElseThrow(()->new ResourceNotFoundException("user not found"));
+    }
+
+    public void saveUser(User user){
+        userRepository.save(user);
     }
 
     public List<User> getLunchOffUsers(){

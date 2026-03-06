@@ -3,20 +3,17 @@ package com.springboot.MessApplication.MessMate.controllers;
 
 import com.springboot.MessApplication.MessMate.dto.*;
 import com.springboot.MessApplication.MessMate.services.AuthService;
+import com.springboot.MessApplication.MessMate.services.PasswordResetTokenService;
 import com.springboot.MessApplication.MessMate.services.UserService;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
 
 @RestController
 @RequestMapping("/auth")
@@ -25,6 +22,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
+    private final PasswordResetTokenService passwordResetTokenService;
 
     @Value("${deploy.env}")
     private String deployEnv;
@@ -61,5 +59,28 @@ public class AuthController {
     }
 
     //forgot password
-    //logout
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponseDto> forgotPassword(
+            @RequestBody ForgotPasswordRequestDto requestDto
+    ){
+        String resetToken = authService.forgotPassword(requestDto.getEmail());
+        return ResponseEntity.ok(new ForgotPasswordResponseDto(resetToken));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(
+            @RequestBody VerifyOtpRequestDto request
+    ){
+        passwordResetTokenService.verifyOtp(request.getResetToken(),request.getOtp());
+        return ResponseEntity.ok(new SuccessResponseDto("Otp verified successfully"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(
+            @RequestBody ResetPasswordRequestDto request
+    ){
+        passwordResetTokenService.resetPassword(request.getResetToken(),request.getNewPassword());
+        return ResponseEntity.ok(new SuccessResponseDto("Password reset successfully"));
+    }
+
 }

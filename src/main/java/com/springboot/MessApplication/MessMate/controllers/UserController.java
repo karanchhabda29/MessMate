@@ -3,6 +3,7 @@ package com.springboot.MessApplication.MessMate.controllers;
 import com.springboot.MessApplication.MessMate.dto.UserDto;
 import com.springboot.MessApplication.MessMate.dto.UserListDto;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionType;
 import com.springboot.MessApplication.MessMate.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,10 @@ public class UserController {
 
     @GetMapping("/all")
     public ResponseEntity<UserListDto> getAllUsers(
-            @RequestParam(value = "status" , required = false) SubscriptionStatus status
-    ) {
-        UserListDto userListDto = userService.getAllUsersFilteredBySubscriptionStatus(status);
+            @RequestParam(value = "status" , required = false) SubscriptionStatus status,
+            @RequestParam(value = "type", required = false) SubscriptionType type
+            ) {
+        UserListDto userListDto = userService.getAllUsersFilteredBySubscriptionStatusAndType(status,type);
         return ResponseEntity.ok(userListDto);
     }
 

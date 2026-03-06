@@ -6,6 +6,7 @@ import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Meal;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.exceptions.InvalidMealOffStateException;
 import com.springboot.MessApplication.MessMate.exceptions.MealOffDeadlineException;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
 import com.springboot.MessApplication.MessMate.repositories.MealOffRepository;
@@ -142,7 +143,7 @@ public class MealOffService {
             MealOff savedMealOff = mealOffRepository.save(mealOff);
             //creating notification
             String message = "Meals set off successfully from " +savedMealOff.getStartDate() + " " + savedMealOff.getStartMeal() + " to " +savedMealOff.getEndDate() + " " +  savedMealOff.getEndMeal();
-            notificationService.createNotification(user.getId(), NotificationType.MEAL_UPDATE,message);
+            notificationService.createNotification(user.getId(), NotificationType.MEAL_OFF,message);
             return modelMapper.map(savedMealOff, CustomMealOffDto.class);
         }else {
             throw new MealOffDeadlineException("Today's Deadline for "+ mealOffDto.getStartMeal() + " is missed. Please try again");
@@ -156,7 +157,7 @@ public class MealOffService {
         //check if meal off exists or not
         if (!mealOff.getCustomOff() || mealOff.getStartDate() == null || mealOff.getEndDate() == null ||
                 mealOff.getStartMeal() == null || mealOff.getEndMeal() == null){
-            throw new ResourceNotFoundException("No existing meal off found");
+            throw new InvalidMealOffStateException("No existing meal off found");
         }else{
             mealOff.setCustomOff(false);
             mealOff.setStartMeal(null);
@@ -168,7 +169,7 @@ public class MealOffService {
             MealOff savedMealOff = mealOffRepository.save(mealOff);
 
             //creating notification
-            notificationService.createNotification(user.getId(), NotificationType.MEAL_UPDATE, "your custom meal off has been cancelled");
+            notificationService.createNotification(user.getId(), NotificationType.MEAL_OFF, "your custom meal off has been cancelled");
             return modelMapper.map(savedMealOff, CustomMealOffDto.class);
         }
     }
@@ -210,8 +211,52 @@ public class MealOffService {
         return new UserListDto(dinnerOffUserDtoList.size(), dinnerOffUserDtoList);
     }
 
+    public TodayMealOffDto cancelLunchOffByUserId(Long userId) {
+        subscriptionService.checkSubscriptionStatus(userId);
+        MealOff mealOff = getMealOff(userId);
+
+        if(!mealOff.getLunch()){
+            throw new InvalidMealOffStateException("Lunch not set Off for user with ID: " + userId);
+        }
+
+        mealOff.setLunch(false);
+
+        //save meal off
+        MealOff savedMealOff = mealOffRepository.save(mealOff);
+
+        //create notification
+        //for user
+        notificationService.createNotification(userId,NotificationType.MEAL_OFF,"Your lunch off has been cancelled via admin");
+
+        //TODO notification for admin
+
+        return modelMapper.map(savedMealOff, TodayMealOffDto.class);
+    }
+
+    public TodayMealOffDto cancelDinnerOffByUserId(Long userId) {
+        subscriptionService.checkSubscriptionStatus(userId);
+        MealOff mealOff = getMealOff(userId);
+
+        if(!mealOff.getDinner()){
+            throw new InvalidMealOffStateException("Dinner not set Off for user with ID: " + userId);
+        }
+
+        mealOff.setDinner(false);
+
+        //save meal off
+        MealOff savedMealOff = mealOffRepository.save(mealOff);
+
+        //create notification
+        //for user
+        notificationService.createNotification(userId,NotificationType.MEAL_OFF,"Your Dinner off has been cancelled via admin");
+
+        //TODO notification for admin
+
+        return modelMapper.map(savedMealOff, TodayMealOffDto.class);
+    }
+
     public List<CustomOffDetailDto> getAllCustomOffs() {
-        return mealOffRepository.findAllByCustomOff(true)
+        return mealOffRepository.findAllByCustomOffAndUser_Subscription_Status(true,SubscriptionStatus.ACTIVE)
                 .stream()
                 .map(mealOff -> {
                     CustomOffDetailDto customOffDetail = new CustomOffDetailDto();
@@ -236,7 +281,7 @@ public class MealOffService {
         //check if meal off exists or not
         if (!mealOff.getCustomOff() || mealOff.getStartDate() == null || mealOff.getEndDate() == null ||
                 mealOff.getStartMeal() == null || mealOff.getEndMeal() == null){
-            throw new ResourceNotFoundException("No existing meal off found");
+            throw new InvalidMealOffStateException("No existing meal off found");
         }else {
             mealOff.setCustomOff(false);
             mealOff.setStartMeal(null);
@@ -248,14 +293,16 @@ public class MealOffService {
             MealOff savedMealOff = mealOffRepository.save(mealOff);
 
             //creating notification
-            notificationService.createNotification(userId, NotificationType.MEAL_UPDATE, "your custom meal off has been cancelled by Admin");
+            notificationService.createNotification(userId, NotificationType.MEAL_OFF, "your custom meal off has been cancelled by Admin");
             return modelMapper.map(savedMealOff, CustomMealOffDto.class);
         }
     }
 
+
     // non-controller methods
     public MealOff getMealOff(long userId) {
-        return mealOffRepository.findByUser_Id(userId);
+        return mealOffRepository.findByUser_Id(userId)
+                .orElseThrow(()->new ResourceNotFoundException("User with Id " + userId + " does not exist"));
     }
 
     public void saveMealOff(MealOff mealOff) {
@@ -265,7 +312,7 @@ public class MealOffService {
 
 
     public List<MealOff>  getCustomMealOffs() {
-        return mealOffRepository.findAllByCustomOff(true);
+        return mealOffRepository.findAllByCustomOffAndUser_Subscription_Status(true,SubscriptionStatus.ACTIVE);
     }
 
     public void resetMealOff(Long userId) {
@@ -288,7 +335,7 @@ public class MealOffService {
 
             //creating notification
             notificationService.createNotification(
-                    user.getId(), NotificationType.MEAL_UPDATE, "Lunch set off successfully for " + LocalDate.now()
+                    user.getId(), NotificationType.MEAL_OFF, "Lunch set off successfully for " + LocalDate.now()
             );
             mealOff.setLunch(false);
         }
@@ -302,7 +349,7 @@ public class MealOffService {
 
             //creating notification
             notificationService.createNotification(
-                    user.getId(), NotificationType.MEAL_UPDATE, "Dinner set off successfully for " + LocalDate.now()
+                    user.getId(), NotificationType.MEAL_OFF, "Dinner set off successfully for " + LocalDate.now()
             );
             mealOff.setDinner(false);
         }

@@ -37,20 +37,14 @@ public class MealOffController {
         return ResponseEntity.ok(mealOffService.cancelDinnerOff());
     }
 
-    @PostMapping
-    public ResponseEntity<CustomMealOffDto> setMealOff(@RequestBody CustomMealOffDto mealOffDto) {
-        return ResponseEntity.ok(mealOffService.setCustomMealOff(mealOffDto));
-    }
-
-    @DeleteMapping
-    public ResponseEntity<CustomMealOffDto> cancelMealOff(){
-        return ResponseEntity.ok(mealOffService.cancelCustomMealOff());
-    }
-
-    //getMealOffDetails
     @GetMapping("/today")
     public ResponseEntity<TodayMealOffDto> getTodayMealOffDetails(){
         return ResponseEntity.ok(mealOffService.getTodayMealOffDetails());
+    }
+
+    @PostMapping
+    public ResponseEntity<CustomMealOffDto> setCustomMealOff(@RequestBody CustomMealOffDto mealOffDto) {
+        return ResponseEntity.ok(mealOffService.setCustomMealOff(mealOffDto));
     }
 
     //getCustomMealOffDetails
@@ -59,17 +53,31 @@ public class MealOffController {
         return ResponseEntity.ok(mealOffService.getCustomMealOffDetails());
     }
 
+    @DeleteMapping
+    public ResponseEntity<CustomMealOffDto> cancelCustomMealOff(){
+        return ResponseEntity.ok(mealOffService.cancelCustomMealOff());
+    }
+
     //get all lunch off (for admin)
     @GetMapping("/lunch_offs")
     public  ResponseEntity<UserListDto> getAllLunchOffs(){
         return ResponseEntity.ok(mealOffService.getAllLunchOffs());
     }
 
+    @DeleteMapping("lunch/{userId}")
+    public ResponseEntity<TodayMealOffDto> cancelLunchOffByUserId(@PathVariable Long userId){
+        return ResponseEntity.ok(mealOffService.cancelLunchOffByUserId(userId));
+    }
 
     //get all dinner off (for admin)
     @GetMapping("/dinner_offs")
     public ResponseEntity<UserListDto> getAllDinnerOffs(){
         return ResponseEntity.ok(mealOffService.getAllDinnerOffs());
+    }
+
+    @DeleteMapping("dinner/{userId}")
+    public ResponseEntity<TodayMealOffDto> cancelDinnerOffByUserId(@PathVariable Long userId){
+        return ResponseEntity.ok(mealOffService.cancelDinnerOffByUserId(userId));
     }
 
     //get all custom meal off (for admin)

@@ -38,7 +38,7 @@ public class SubscriptionMealOffCoordinatorService {
         Subscription savedSubscription = subscriptionService.saveSubscription(subscription);
         notificationService.createNotification(
                 userId,
-                NotificationType.MEAL_UPDATE,
+                NotificationType.MEAL_COUNT,
                 "Your meal count has been updated to "+ savedSubscription.getMeals()+" by admin"
         );
         if(savedSubscription.getStatus().equals(SubscriptionStatus.INACTIVE)){
@@ -70,7 +70,7 @@ public class SubscriptionMealOffCoordinatorService {
             Long userId = subscription.getUser().getId();
 
             notificationService.createNotification(
-                    userId,NotificationType.MEAL_UPDATE,"Your " + meal + " counted successfully for " + LocalDate.now()
+                    userId,NotificationType.MEAL_COUNT,"Your " + meal + " counted successfully for " + LocalDate.now()
             );
             //subscription expiry check
             if(savedSubscription.getStatus().equals(SubscriptionStatus.INACTIVE)){
