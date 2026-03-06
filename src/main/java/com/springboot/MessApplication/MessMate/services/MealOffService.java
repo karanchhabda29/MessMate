@@ -6,6 +6,7 @@ import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.Meal;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.exceptions.InvalidCustomOffRequestException;
 import com.springboot.MessApplication.MessMate.exceptions.InvalidMealOffStateException;
 import com.springboot.MessApplication.MessMate.exceptions.MealOffDeadlineException;
 import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
@@ -38,9 +39,7 @@ public class MealOffService {
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
         if(mealOff.getLunch()){
-            TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
-            todayMealOffDto.setMessage("Lunch Already set off for today");
-            return todayMealOffDto;
+            throw new InvalidMealOffStateException("Lunch already set off for today");
         }else{
             if(LocalTime.now().isBefore(LUNCH_DEADLINE)) {
                 mealOff.setLunch(true);
@@ -58,9 +57,7 @@ public class MealOffService {
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
         if(!mealOff.getLunch()){
-            TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
-            todayMealOffDto.setMessage("Lunch not set off for today");
-            return todayMealOffDto;
+            throw new InvalidMealOffStateException("Lunch not set off for today");
         }else if(LocalTime.now().isBefore(LUNCH_DEADLINE)) {
             mealOff.setLunch(false);
             MealOff savedMealOff = mealOffRepository.save(mealOff);
@@ -77,9 +74,7 @@ public class MealOffService {
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
         if(mealOff.getDinner()) {
-            TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
-            todayMealOffDto.setMessage("Dinner Already set off for today");
-            return todayMealOffDto;
+            throw new InvalidMealOffStateException("Dinner Already set off for today");
         }else{
             if(LocalTime.now().isBefore(DINNER_DEADLINE)) {
                 mealOff.setDinner(true);
@@ -98,9 +93,7 @@ public class MealOffService {
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
         if(!mealOff.getDinner()){
-            TodayMealOffDto todayMealOffDto = modelMapper.map(mealOff, TodayMealOffDto.class);
-            todayMealOffDto.setMessage("Dinner not set off for today");
-            return todayMealOffDto;
+            throw new InvalidMealOffStateException("Dinner not set off for today");
         }else if(LocalTime.now().isBefore(DINNER_DEADLINE)) {
             mealOff.setDinner(false);
             MealOff savedMealOff = mealOffRepository.save(mealOff);
@@ -118,19 +111,19 @@ public class MealOffService {
 
         MealOff mealOff = getMealOff(user.getId());
         if(mealOff.getCustomOff()){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Custom off already set");
+            throw new InvalidMealOffStateException("Custom off already set");
         }
 
         if(mealOffDto.getStartDate().isBefore(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Start date cannot be before current date");
+            throw new InvalidCustomOffRequestException("Start date cannot be before current date");
         }
 
         if(mealOffDto.getEndDate().isBefore(mealOffDto.getStartDate())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"End date cannot be before Start date");
+            throw new InvalidCustomOffRequestException("End date cannot be before Start date");
         }
 
         if(mealOffDto.getStartDate().isEqual(mealOffDto.getEndDate()) && mealOffDto.getStartMeal()==Meal.DINNER && mealOffDto.getEndMeal()==Meal.LUNCH) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Start meal cannot be after end meal for one day off");
+            throw new InvalidCustomOffRequestException("Start meal cannot be after end meal for one day off");
         }
 
         boolean isFutureDate = mealOffDto.getStartDate().isAfter(LocalDate.now());

@@ -2,13 +2,13 @@ package com.springboot.MessApplication.MessMate.services;
 
 import com.springboot.MessApplication.MessMate.entities.PasswordResetToken;
 import com.springboot.MessApplication.MessMate.entities.User;
+import com.springboot.MessApplication.MessMate.exceptions.PasswordResetException;
 import com.springboot.MessApplication.MessMate.repositories.PasswordResetTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -65,38 +65,28 @@ public class PasswordResetTokenService {
 
     public void verifyOtp(String resetToken, String otp) {
         PasswordResetToken token = passwordResetTokenRepository.findByResetToken(resetToken)
-                .orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid Session"));
+                .orElseThrow(()->new PasswordResetException("Invalid session"));
 
         if(token.isOtpVerified()){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,"OTP already verified"
-            );
+            throw new PasswordResetException("OTP already verified");
         }
 
         if(token.getTokenExpiry().isBefore(LocalDateTime.now())){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,"Reset Session Expired"
-            );
+            throw new PasswordResetException("Reset session expired");
         }
 
         if(token.getOtpExpiry().isBefore(LocalDateTime.now())){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,"OTP expired"
-            );
+            throw new PasswordResetException("OTP expired");
         }
 
         if(token.getAttemptCount()>=MAX_ATTEMPTS){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,"Too many attempts"
-            );
+            throw new PasswordResetException("Too many attempts");
         }
 
         if(!passwordEncoder.matches(otp,token.getHashedOtp())){
             token.setAttemptCount(token.getAttemptCount() + 1);
             passwordResetTokenRepository.save(token);
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,"invalid Otp"
-            );
+            throw new PasswordResetException("Invalid OTP");
         }
 
         token.setOtpVerified(true);
@@ -106,20 +96,14 @@ public class PasswordResetTokenService {
     public void resetPassword(String resetToken, String newPassword) {
         PasswordResetToken token = passwordResetTokenRepository
                 .findByResetToken(resetToken)
-                .orElseThrow(()->new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,"Invalid Session"
-                ));
+                .orElseThrow(()->new PasswordResetException("Invalid Session"));
 
         if(!token.isOtpVerified()){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,"otp not verified"
-            );
+            throw new PasswordResetException("OTP not verified");
         }
 
         if(token.getTokenExpiry().isBefore(LocalDateTime.now())){
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,"Reset session Expired"
-            );
+            throw new PasswordResetException("Reset session expired");
         }
 
         User user = token.getUser();

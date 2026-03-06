@@ -2,6 +2,7 @@ package com.springboot.MessApplication.MessMate.controllers;
 
 
 import com.springboot.MessApplication.MessMate.dto.SubscriptionDto;
+import com.springboot.MessApplication.MessMate.dto.UpdateMealCountRequestDto;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionType;
 import com.springboot.MessApplication.MessMate.services.SubscriptionMealOffCoordinatorService;
 import com.springboot.MessApplication.MessMate.services.SubscriptionService;
@@ -40,8 +41,8 @@ public class SubscriptionController {
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<SubscriptionDto> updateSubscriptionByUserId(@PathVariable long userId,@RequestBody SubscriptionDto subscriptionDto){
-        return ResponseEntity.ok(subscriptionMealOffCoordinatorService.updateSubscriptionByUserId(userId,subscriptionDto));
+    public ResponseEntity<SubscriptionDto> updateSubscriptionByUserId(@PathVariable long userId,@RequestBody UpdateMealCountRequestDto request){
+        return ResponseEntity.ok(subscriptionMealOffCoordinatorService.updateSubscriptionByUserId(userId,request));
     }
 
 }
