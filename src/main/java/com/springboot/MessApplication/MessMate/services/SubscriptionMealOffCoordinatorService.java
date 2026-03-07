@@ -1,12 +1,13 @@
 package com.springboot.MessApplication.MessMate.services;
 
 import com.springboot.MessApplication.MessMate.dto.SubscriptionDto;
+import com.springboot.MessApplication.MessMate.dto.UpdateMealCountRequestDto;
 import com.springboot.MessApplication.MessMate.entities.Subscription;
 import com.springboot.MessApplication.MessMate.entities.enums.Meal;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
+import com.springboot.MessApplication.MessMate.exceptions.BadRequestException;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,19 +28,20 @@ public class SubscriptionMealOffCoordinatorService {
     private final ModelMapper modelMapper;
 
     @Transactional
-    public SubscriptionDto updateSubscriptionByUserId(long userId, SubscriptionDto subscriptionDto) {
-        if(subscriptionDto.getMeals()<0){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Meal count cannot be less than 0");
+    public SubscriptionDto updateSubscriptionByUserId(long userId, UpdateMealCountRequestDto request) {
+        if(request.getUpdatedMeals()<0){
+            throw new BadRequestException("Meal count cannot be less than 0");
         }
         Subscription subscription = subscriptionService.getSubscriptionByUserId(userId);
-        subscription.setMeals(subscriptionDto.getMeals());
+        subscription.setMeals(request.getUpdatedMeals());
         subscriptionService.updateStatusIfMealsExhausted(subscription);
 
         Subscription savedSubscription = subscriptionService.saveSubscription(subscription);
         notificationService.createNotification(
                 userId,
                 NotificationType.MEAL_COUNT,
-                "Your meal count has been updated to "+ savedSubscription.getMeals()+" by admin"
+                "Your meal count has been updated to "+ savedSubscription.getMeals()+" by admin\n"+
+                        "Reason: "+ request.getReason()
         );
         if(savedSubscription.getStatus().equals(SubscriptionStatus.INACTIVE)){
             notificationService.createNotification(

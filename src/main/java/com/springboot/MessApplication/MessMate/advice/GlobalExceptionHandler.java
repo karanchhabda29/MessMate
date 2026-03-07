@@ -1,12 +1,10 @@
 package com.springboot.MessApplication.MessMate.advice;
 
-import com.springboot.MessApplication.MessMate.exceptions.InvalidMealOffStateException;
-import com.springboot.MessApplication.MessMate.exceptions.MealOffDeadlineException;
-import com.springboot.MessApplication.MessMate.exceptions.ResourceNotFoundException;
-import com.springboot.MessApplication.MessMate.exceptions.UserNotSubscribedException;
+import com.springboot.MessApplication.MessMate.exceptions.*;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -39,6 +37,12 @@ public class GlobalExceptionHandler {
         return buildErrorResponseEntity(apiError);
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(AccessDeniedException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.FORBIDDEN);
+        return buildErrorResponseEntity(apiError);
+    }
+
     @ExceptionHandler(MealOffDeadlineException.class)
     public ResponseEntity<ApiResponse<?>> handleMealOffDeadlineException(MealOffDeadlineException exception) {
         ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
@@ -47,7 +51,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiResponse<?>> handleResponseStatusException(ResponseStatusException exception) {
-        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), exception.getStatusCode());
         return buildErrorResponseEntity(apiError);
     }
 
@@ -59,6 +63,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidMealOffStateException.class)
     public ResponseEntity<ApiResponse<?>> handleInvalidMealOffStateException(InvalidMealOffStateException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(InvalidCustomOffRequestException.class)
+    public ResponseEntity<ApiResponse<?>> handleInvalidCustomOffRequestException(InvalidCustomOffRequestException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(PasswordResetException.class)
+    public ResponseEntity<ApiResponse<?>> handlePasswordResetException(PasswordResetException exception) {
+        ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
+        return buildErrorResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ApiResponse<?>> handleBadRequestException(BadRequestException exception) {
         ApiError apiError = new ApiError(exception.getLocalizedMessage(), HttpStatus.BAD_REQUEST);
         return buildErrorResponseEntity(apiError);
     }
