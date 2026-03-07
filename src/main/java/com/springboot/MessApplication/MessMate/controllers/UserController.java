@@ -7,6 +7,7 @@ import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionType;
 import com.springboot.MessApplication.MessMate.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,6 +17,14 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping
+    public ResponseEntity<UserDto> getMyProfile() {
+        return ResponseEntity.ok(userService.getMyProfile());
+    }
+
+    //TODO updateProfile (all)
+
+    @Secured("ROLE_ADMIN")
     @GetMapping("/all")
     public ResponseEntity<UserListDto> getAllUsers(
             @RequestParam(value = "status" , required = false) SubscriptionStatus status,
@@ -25,20 +34,13 @@ public class UserController {
         return ResponseEntity.ok(userListDto);
     }
 
-    //TODO getUserDetailsById (admin)
+    @Secured("ROLE_ADMIN")
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserProfileById(@PathVariable long id) {
         return ResponseEntity.ok(userService.getUserProfileById(id));
     }
 
-    //TODO getMyProfile (student)
-    @GetMapping
-    public ResponseEntity<UserDto> getMyProfile() {
-        return ResponseEntity.ok(userService.getMyProfile());
-    }
-
-    //TODO updateProfile (all)
-
+    @Secured("ROLE_ADMIN")
     @GetMapping("/search/{name}")
     public ResponseEntity<UserListDto> searchUsersByName(@PathVariable String name ) {
         return ResponseEntity.ok(userService.searchUsersByName(name));
