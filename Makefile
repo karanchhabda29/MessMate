@@ -53,8 +53,8 @@ docker-stop:
 	docker stop messmate-backend || true
 	docker rm messmate-backend || true
 
-# Run Docker container in production mode (stops the old one first)
-docker-run: docker-stop
+# Run Docker container in production mode with environment variables
+docker-run:
 	docker run -d \
 		--name messmate-backend \
 		--restart unless-stopped \
