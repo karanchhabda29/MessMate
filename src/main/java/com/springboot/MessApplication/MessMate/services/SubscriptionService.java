@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -78,12 +78,10 @@ public class SubscriptionService {
     public Subscription saveSubscription(Subscription subscription) {
         return subscriptionRepository.save(subscription);
     }
+
     public void checkSubscriptionStatus(Long userId) {
         Subscription subscription = getSubscriptionByUserId(userId);
-        if (subscription==null){
-            throw new ResourceNotFoundException("User with Id " + userId + " does not exist");
-        }
-        if(Set.of(SubscriptionStatus.INACTIVE,SubscriptionStatus.REQUESTED).contains(subscription.getStatus()) ){
+        if(EnumSet.of(SubscriptionStatus.INACTIVE,SubscriptionStatus.REQUESTED).contains(subscription.getStatus()) ){
             throw new UserNotSubscribedException("User not subscribed");
         }
     }

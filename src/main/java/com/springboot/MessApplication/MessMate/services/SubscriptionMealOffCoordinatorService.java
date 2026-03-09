@@ -7,6 +7,7 @@ import com.springboot.MessApplication.MessMate.entities.enums.Meal;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
 import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.exceptions.BadRequestException;
+import com.springboot.MessApplication.MessMate.exceptions.UserNotSubscribedException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.EnumSet;
 import java.util.List;
 
 
@@ -33,6 +35,10 @@ public class SubscriptionMealOffCoordinatorService {
             throw new BadRequestException("Meal count cannot be less than 0");
         }
         Subscription subscription = subscriptionService.getSubscriptionByUserId(userId);
+        if(EnumSet.of(SubscriptionStatus.INACTIVE, SubscriptionStatus.REQUESTED)
+                .contains(subscription.getStatus())){
+            throw new UserNotSubscribedException("User not subscribed");
+        }
         subscription.setMeals(request.getUpdatedMeals());
         subscriptionService.updateStatusIfMealsExhausted(subscription);
 
