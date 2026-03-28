@@ -4,7 +4,9 @@ import com.springboot.MessApplication.MessMate.dto.NotificationDto;
 import com.springboot.MessApplication.MessMate.entities.Notification;
 import com.springboot.MessApplication.MessMate.entities.User;
 import com.springboot.MessApplication.MessMate.entities.enums.NotificationType;
+import com.springboot.MessApplication.MessMate.entities.enums.SubscriptionStatus;
 import com.springboot.MessApplication.MessMate.repositories.NotificationRepository;
+import com.springboot.MessApplication.MessMate.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,7 @@ public class NotificationService {
 
     private final ModelMapper modelMapper;
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
     private final UserService userService;
 
     public List<NotificationDto> getAllNotifications(NotificationType type) {
@@ -59,5 +62,15 @@ public class NotificationService {
                 .build();
 
         notificationRepository.save(notification);
+    }
+
+    public void createAnnouncement(String message, boolean notifyAllUsers) {
+        List<User> users = notifyAllUsers 
+                ? userRepository.findAll() 
+                : userRepository.findBySubscription_Status(SubscriptionStatus.ACTIVE);
+
+        for (User user : users) {
+            createNotification(user.getId(), NotificationType.ANNOUNCEMENT, message);
+        }
     }
 }
