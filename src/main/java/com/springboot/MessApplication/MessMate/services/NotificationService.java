@@ -65,12 +65,19 @@ public class NotificationService {
     }
 
     public void createAnnouncement(String message, boolean notifyAllUsers) {
-        List<User> users = notifyAllUsers 
-                ? userRepository.findAll() 
+        List<User> users = notifyAllUsers
+                ? userRepository.findAll()
                 : userRepository.findBySubscription_Status(SubscriptionStatus.ACTIVE);
 
-        for (User user : users) {
-            createNotification(user.getId(), NotificationType.ANNOUNCEMENT, message);
-        }
+        List<Notification> notifications = users.stream()
+                .map(user -> Notification.builder()
+                        .user(user)
+                        .type(NotificationType.ANNOUNCEMENT)
+                        .message(message)
+                        .isRead(false)
+                        .build())
+                .collect(Collectors.toList());
+
+        notificationRepository.saveAll(notifications);
     }
 }
