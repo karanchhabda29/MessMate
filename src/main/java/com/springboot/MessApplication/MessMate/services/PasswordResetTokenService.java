@@ -49,10 +49,10 @@ public class PasswordResetTokenService {
         passwordResetTokenRepository.save(token);
 
         //send email to user
-        emailService.sendMail(
+        emailService.sendHtmlMail(
                 user.getEmail(),
-                "Password reset OTP",
-                "your OTP is: " + otp
+                "Password Reset OTP - MessMate",
+                buildPasswordResetHtmlEmail(user.getName(), otp)
         );
 
         //return token
@@ -61,6 +61,74 @@ public class PasswordResetTokenService {
 
     private String generateOtp() {
         return String.valueOf((int)(Math.random()*900000)+100000 );
+    }
+
+    private String buildPasswordResetHtmlEmail(String userName, String otp) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+                <table width="100%%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td align="center" style="padding: 40px 0;">
+                            <table width="560" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 4px;">
+                                <!-- Header -->
+                                <tr>
+                                    <td style="padding: 32px 40px; border-bottom: 1px solid #e5e5e5;">
+                                        <h1 style="color: #1a1a1a; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px;">MessMate</h1>
+                                    </td>
+                                </tr>
+                                <!-- Content -->
+                                <tr>
+                                    <td style="padding: 40px;">
+                                        <h2 style="color: #1a1a1a; margin: 0 0 24px 0; font-size: 20px; font-weight: 600;">Reset your password</h2>
+                                        <p style="color: #4a4a4a; margin: 0 0 24px 0; font-size: 15px; line-height: 1.6;">
+                                            Hi %s,
+                                        </p>
+                                        <p style="color: #4a4a4a; margin: 0 0 32px 0; font-size: 15px; line-height: 1.6;">
+                                            We received a request to reset your password. Use the OTP below to proceed:
+                                        </p>
+                                        <!-- OTP Box -->
+                                        <table width="100%%" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td align="center">
+                                                    <div style="background-color: #fafafa; border: 1px solid #e0e0e0; border-radius: 6px; padding: 20px 32px; display: inline-block;">
+                                                        <p style="color: #888888; margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">One-Time Password</p>
+                                                        <p style="color: #1a1a1a; margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 6px; font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', monospace;">%s</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <!-- Warning -->
+                                        <div style="background-color: #fffbe6; border: 1px solid #ffe58f; padding: 14px 16px; margin: 32px 0 0 0; border-radius: 4px;">
+                                            <p style="color: #ad6800; margin: 0; font-size: 13px; line-height: 1.5;">
+                                                <strong>Valid for 5 minutes.</strong> Don't share this OTP with anyone.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Footer -->
+                                <tr>
+                                    <td style="background-color: #fafafa; padding: 24px 40px; border-top: 1px solid #e5e5e5;">
+                                        <p style="color: #888888; margin: 0 0 8px 0; font-size: 13px;">
+                                            If you didn't request this, you can safely ignore this email.
+                                        </p>
+                                        <p style="color: #bbbbbb; margin: 0; font-size: 12px;">
+                                            © 2026 MessMate
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+            """.formatted(userName, otp);
     }
 
     public void verifyOtp(String resetToken, String otp) {
