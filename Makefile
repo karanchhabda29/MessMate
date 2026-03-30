@@ -55,10 +55,11 @@ docker-stop:
 
 # Run Docker container in production mode with environment variables
 docker-run:
-	docker run -d \
-		--name messmate-backend \
-		--restart unless-stopped \
-		-p 8080:8080 \
-		--env-file .env \
-		-e SPRING_PROFILES_ACTIVE=prod \
-		$(IMAGE_NAME):$(TAG)
+		docker run -d \
+			--name messmate-backend \
+			--restart unless-stopped \
+			-p 8080:8080 \
+			--env-file .env \
+			-v $$(pwd)/secrets/service-account.json:/app/secrets/service-account.json:ro \
+			-e SPRING_PROFILES_ACTIVE=prod \
+			$(IMAGE_NAME):$(TAG)
