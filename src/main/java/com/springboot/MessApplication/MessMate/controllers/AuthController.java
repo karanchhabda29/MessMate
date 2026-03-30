@@ -7,6 +7,7 @@ import com.springboot.MessApplication.MessMate.services.PasswordResetTokenServic
 import com.springboot.MessApplication.MessMate.services.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class AuthController {
 
     
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> signup(@RequestBody SignupDto signupDto) {
+    public ResponseEntity<UserDto> signup(@Valid @RequestBody SignupDto signupDto) {
         UserDto userDto = userService.signup(signupDto);
         return ResponseEntity.ok(userDto);
     }

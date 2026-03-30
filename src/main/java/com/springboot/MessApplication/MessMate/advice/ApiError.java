@@ -24,4 +24,8 @@ public class ApiError {
         this.statusCode = statusCode;
     }
 
+    public HttpStatusCode getStatusCode() {
+        return statusCode;
+    }
+
 }
