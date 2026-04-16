@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -35,6 +36,7 @@ public class MealOffService {
     private final UserService userService;
 
     public TodayMealOffDto setLunchOff() {
+        validateWeekdayOperation();
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
@@ -53,6 +55,7 @@ public class MealOffService {
         }
     }
     public TodayMealOffDto cancelLunchOff() {
+        validateWeekdayOperation();
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
@@ -70,6 +73,7 @@ public class MealOffService {
     }
 
     public TodayMealOffDto setDinnerOff() {
+        validateWeekdayOperation();
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
@@ -89,6 +93,7 @@ public class MealOffService {
     }
 
     public TodayMealOffDto cancelDinnerOff() {
+        validateWeekdayOperation();
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         subscriptionService.checkSubscriptionStatus(user.getId());
         MealOff mealOff = getMealOff(user.getId());
@@ -124,6 +129,27 @@ public class MealOffService {
 
         if(mealOffDto.getStartDate().isEqual(mealOffDto.getEndDate()) && mealOffDto.getStartMeal()==Meal.DINNER && mealOffDto.getEndMeal()==Meal.LUNCH) {
             throw new InvalidCustomOffRequestException("Start meal cannot be after end meal for one day off");
+        }
+
+        /**
+         * Validation: Must include at least one weekday (Monday-Friday).
+         * Weekend-only meal-offs are not allowed.
+         */
+        if (!containsWeekday(mealOffDto.getStartDate(), mealOffDto.getEndDate())) {
+            throw new InvalidCustomOffRequestException("Custom meal-offs must include at least one working day (Monday-Friday)");
+        }
+
+        /**
+         * Auto-Correction: On Sundays, there's only one special meal (equivalent to 2 normal meals).
+         * We auto-correct the meal selection to ensure Sunday is treated as a full day off.
+         * - If startDate is Sunday: set startMeal to LUNCH
+         * - If endDate is Sunday: set endMeal to DINNER
+         */
+        if (mealOffDto.getStartDate().getDayOfWeek() == DayOfWeek.SUNDAY) {
+            mealOffDto.setStartMeal(Meal.LUNCH);
+        }
+        if (mealOffDto.getEndDate().getDayOfWeek() == DayOfWeek.SUNDAY) {
+            mealOffDto.setEndMeal(Meal.DINNER);
         }
 
         boolean isFutureDate = mealOffDto.getStartDate().isAfter(LocalDate.now());
@@ -347,6 +373,39 @@ public class MealOffService {
             mealOff.setDinner(false);
         }
         mealOffRepository.saveAll(dinnerOffs);
+    }
+
+    /**
+     * Validates that the current operation is performed on a weekday (Monday-Friday).
+     * Daily meal-offs (setLunchOff, setDinnerOff, etc.) are not allowed on weekends.
+     *
+     * @throws InvalidMealOffStateException if today is Saturday or Sunday
+     */
+    private void validateWeekdayOperation() {
+        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        if (today == DayOfWeek.SATURDAY || today == DayOfWeek.SUNDAY) {
+            throw new InvalidMealOffStateException("Daily meal-offs cannot be applied on weekends");
+        }
+    }
+
+    /**
+     * Checks if the date range from startDate to endDate contains at least one weekday (Monday-Friday).
+     * This validation ensures that custom meal-offs include at least one working day.
+     *
+     * @param startDate the start date of the meal-off period
+     * @param endDate the end date of the meal-off period
+     * @return true if at least one weekday exists in the range, false otherwise
+     */
+    private boolean containsWeekday(LocalDate startDate, LocalDate endDate) {
+        LocalDate current = startDate;
+        while (!current.isAfter(endDate)) {
+            DayOfWeek day = current.getDayOfWeek();
+            if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY) {
+                return true;
+            }
+            current = current.plusDays(1);
+        }
+        return false;
     }
 
 }
